@@ -879,6 +879,9 @@ public:
 	float m_silentTimestamp;
 	MusicState m_musicState;
 	float m_flLastCommandTime[COMMANDS_TO_TRACK];
+#ifdef REGAMEDLL_ADD
+	BOOL m_iBunnyHop;
+#endif
 
 #ifdef BUILD_LATEST
 	int m_iLastAccount;

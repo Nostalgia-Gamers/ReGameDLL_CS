@@ -2317,6 +2317,9 @@ void PM_NoClip()
 // movement logic does.
 void PM_PreventMegaBunnyJumping()
 {
+	if (UTIL_PlayerByIndex(pmove->player_index + 1)->m_iBunnyHop || bunnyhop.value > 0.0f)
+		return;
+
 	// Current player speed
 	real_t spd;
 	// If we have to crop, apply this cropping fraction to velocity
@@ -2410,7 +2413,7 @@ void PM_Jump()
 
 	// No more effect
 	// in air, so no effect
- 	if (pmove->onground == -1)
+	if (pmove->onground == -1)
 	{
 		// Flag that we jumped.
 		// don't jump again until released
@@ -2994,6 +2997,10 @@ void PM_PlayerMove(qboolean server)
 				if (!pLadder)
 				{
 					PM_Jump();
+#ifdef REGAMEDLL_ADD
+					if (UTIL_PlayerByIndex(pmove->player_index + 1)->m_iBunnyHop || bunnyhop.value > 0.0f)
+						pmove->oldbuttons &= ~IN_JUMP;
+#endif
 				}
 			}
 			else
