@@ -159,16 +159,24 @@ inline CCSPlayer::EProtectionState CCSPlayer::GetProtectionState() const
 
 inline bool CCSPlayer::HasBunnyHop() const
 {
-	if (m_iBunnyHop || bunnyhop.value)
+	if (m_iBunnyHop)
 		return true;
 
-	int iFlags = UTIL_ReadFlags(bunnyhop.string);
-
-	if (BasePlayer()->m_iTeam == TERRORIST && iFlags & BUNNYHOP_TERRORIST)
+	switch ((int)bunnyhop.value)
+	{
+	case 1:
 		return true;
-
-	if (BasePlayer()->m_iTeam == CT && iFlags & BUNNYHOP_CT)
-		return true;
+	case 2:
+		if (BasePlayer()->m_iTeam == TERRORIST)
+			return true;
+		break;
+	case 3:
+		if (BasePlayer()->m_iTeam == CT)
+			return true;
+		break;
+	default:
+		break;
+	}
 
 	return false;
 }
