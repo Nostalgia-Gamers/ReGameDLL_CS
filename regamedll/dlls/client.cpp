@@ -2596,7 +2596,7 @@ void EXT_FUNC InternalCommand(edict_t *pEntity, const char *pcmd, const char *pa
 #ifdef REGAMEDLL_ADD
 		if (HasBlockedCommand(BLOCK_VOTE))
 		{
-			ClientPrint(pPlayer->pev, HUD_PRINTCONSOLE, "Comando bloqueado por el servidor");
+			ClientPrint(pPlayer->pev, HUD_PRINTCONSOLE, "#Command_Not_Available");
 			return;
 		}
 #endif // REGAMEDLL_ADD
@@ -2685,7 +2685,7 @@ void EXT_FUNC InternalCommand(edict_t *pEntity, const char *pcmd, const char *pa
 #ifdef REGAMEDLL_ADD
 		if (HasBlockedCommand(BLOCK_VOTEMAP))
 		{
-			ClientPrint(pPlayer->pev, HUD_PRINTCONSOLE, "Comando bloqueado por el servidor");
+			ClientPrint(pPlayer->pev, HUD_PRINTCONSOLE, "#Command_Not_Available");
 			return;
 		}
 #endif // REGAMEDLL_ADD
