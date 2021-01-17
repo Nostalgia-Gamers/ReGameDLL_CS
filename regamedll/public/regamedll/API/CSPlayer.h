@@ -116,12 +116,6 @@ public:
 	EProtectionState GetProtectionState() const;
 	bool CheckActivityInGame();
 
-	enum
-	{
-		BUNNYHOP_TERRORIST = BIT(0),
-		BUNNYHOP_CT		   = BIT(1),
-	};
-
 	bool HasBunnyHop() const;
 
 public:
