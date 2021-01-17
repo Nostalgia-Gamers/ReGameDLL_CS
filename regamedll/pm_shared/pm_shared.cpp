@@ -2317,7 +2317,7 @@ void PM_NoClip()
 // movement logic does.
 void PM_PreventMegaBunnyJumping()
 {
-	if (UTIL_PlayerByIndex(pmove->player_index + 1)->m_iBunnyHop || bunnyhop.value > 0.0f)
+	if (UTIL_PlayerByIndex(pmove->player_index + 1)->CSPlayer()->HasBunnyHop())
 		return;
 
 	// Current player speed
@@ -2998,7 +2998,7 @@ void PM_PlayerMove(qboolean server)
 				{
 					PM_Jump();
 #ifdef REGAMEDLL_ADD
-					if (UTIL_PlayerByIndex(pmove->player_index + 1)->m_iBunnyHop || bunnyhop.value > 0.0f)
+					if (UTIL_PlayerByIndex(pmove->player_index + 1)->CSPlayer()->HasBunnyHop())
 						pmove->oldbuttons &= ~IN_JUMP;
 #endif
 				}

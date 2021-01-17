@@ -46,7 +46,8 @@ public:
 		m_iWeaponInfiniteAmmo(0),
 		m_iWeaponInfiniteIds(0),
 		m_bCanShootOverride(false),
-		m_bGameForcingRespawn(false)
+		m_bGameForcingRespawn(false),
+		m_iBunnyHop(0)
 	{
 		m_szModel[0] = '\0';
 	}
@@ -115,6 +116,14 @@ public:
 	EProtectionState GetProtectionState() const;
 	bool CheckActivityInGame();
 
+	enum
+	{
+		BUNNYHOP_TERRORIST = BIT(0),
+		BUNNYHOP_CT		   = BIT(1),
+	};
+
+	bool HasBunnyHop() const;
+
 public:
 	char m_szModel[32];
 	bool m_bForceShowMenu;
@@ -125,6 +134,7 @@ public:
 	int m_iWeaponInfiniteIds;
 	bool m_bCanShootOverride;
 	bool m_bGameForcingRespawn;
+	BOOL m_iBunnyHop;
 };
 
 // Inlines
@@ -145,4 +155,18 @@ inline CCSPlayer::EProtectionState CCSPlayer::GetProtectionState() const
 
 	// has expired
 	return ProtectionSt_Expired;
+}
+
+inline bool CCSPlayer::HasBunnyHop() const
+{
+	if (m_iBunnyHop || bunnyhop.value)
+		return true;
+
+	if (BasePlayer()->m_iTeam == TERRORIST && UTIL_ReadFlags(bunnyhop.string) & BUNNYHOP_TERRORIST)
+		return true;
+
+	if (BasePlayer()->m_iTeam == CT && UTIL_ReadFlags(bunnyhop.string) & BUNNYHOP_CT)
+		return true;
+
+	return false;
 }

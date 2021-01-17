@@ -4416,7 +4416,7 @@ void EXT_FUNC CBasePlayer::__API_HOOK(PreThink)()
 	m_afButtonReleased = (buttonsChanged & (~pev->button));		// The ones not down are "released"
 
 #ifdef REGAMEDLL_ADD
-	if (m_iBunnyHop || bunnyhop.value > 0.0f)
+	if (CSPlayer()->HasBunnyHop())
 		m_afButtonPressed &= ~IN_JUMP;
 #endif
 	
