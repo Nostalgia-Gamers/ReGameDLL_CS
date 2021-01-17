@@ -535,6 +535,7 @@ void CCSPlayer::Reset()
 		m_flSpawnProtectionEndTime = 0.0f;
 
 	m_vecOldvAngle = g_vecZero;
+	m_iBunnyHop = FALSE;
 	m_iWeaponInfiniteAmmo = 0;
 	m_iWeaponInfiniteIds = 0;
 	m_bCanShootOverride = false;

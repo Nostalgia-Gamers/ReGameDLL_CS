@@ -47,7 +47,7 @@ public:
 		m_iWeaponInfiniteIds(0),
 		m_bCanShootOverride(false),
 		m_bGameForcingRespawn(false),
-		m_iBunnyHop(0)
+		m_iBunnyHop(FALSE)
 	{
 		m_szModel[0] = '\0';
 	}
@@ -162,10 +162,12 @@ inline bool CCSPlayer::HasBunnyHop() const
 	if (m_iBunnyHop || bunnyhop.value)
 		return true;
 
-	if (BasePlayer()->m_iTeam == TERRORIST && UTIL_ReadFlags(bunnyhop.string) & BUNNYHOP_TERRORIST)
+	int iFlags = UTIL_ReadFlags(bunnyhop.string);
+
+	if (BasePlayer()->m_iTeam == TERRORIST && iFlags & BUNNYHOP_TERRORIST)
 		return true;
 
-	if (BasePlayer()->m_iTeam == CT && UTIL_ReadFlags(bunnyhop.string) & BUNNYHOP_CT)
+	if (BasePlayer()->m_iTeam == CT && iFlags & BUNNYHOP_CT)
 		return true;
 
 	return false;
