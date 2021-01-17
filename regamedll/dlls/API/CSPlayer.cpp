@@ -545,6 +545,20 @@ void CCSPlayer::OnSpawn()
 {
 	m_bGameForcingRespawn = false;
 	m_flRespawnPending = 0.0f;
+
+#ifdef REGAMEDLL_ADD
+	if (free_armor.value > 0)
+	{
+		entvars_t* pev = BasePlayer()->pev;
+		pev->armorvalue = 100.0;
+
+		BasePlayer()->m_iKevlar = (int)free_armor.value == 1 ? ARMOR_KEVLAR : ARMOR_VESTHELM;
+
+		MESSAGE_BEGIN(MSG_ONE, gmsgBattery, nullptr, pev);
+		WRITE_SHORT((int)pev->armorvalue);
+		MESSAGE_END();
+	}
+#endif // REGAMEDLL_ADD
 }
 
 void CCSPlayer::OnKilled()
