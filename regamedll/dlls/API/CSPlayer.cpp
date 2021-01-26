@@ -180,10 +180,6 @@ EXT_FUNC bool CCSPlayer::RemovePlayerItemEx(const char* pszItemName, bool bRemov
 
 			pPlayer->m_iKevlar = ARMOR_NONE;
 			pPlayer->pev->armorvalue = 0;
-
-			MESSAGE_BEGIN(MSG_ONE, gmsgArmorType, nullptr, pPlayer->pev);
-				WRITE_BYTE(0);
-			MESSAGE_END();
 		}
 		// item_kevlar
 		else if (FStrEq(pszItemName, "kevlar"))
@@ -549,7 +545,7 @@ void CCSPlayer::OnSpawn()
 #ifdef REGAMEDLL_ADD
 	if (free_armor.value > 0)
 	{
-		BasePlayer()->m_iKevlar = (int)free_armor.value == 1 ? ARMOR_KEVLAR : ARMOR_VESTHELM;
+		BasePlayer()->m_iKevlar = static_cast<int>(free_armor.value) == 1 ? ARMOR_KEVLAR : ARMOR_VESTHELM;
 		BasePlayer()->pev->armorvalue = 100.0;
 	}
 #endif // REGAMEDLL_ADD

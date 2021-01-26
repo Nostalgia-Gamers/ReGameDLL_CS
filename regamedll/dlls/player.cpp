@@ -5651,6 +5651,7 @@ void EXT_FUNC CBasePlayer::__API_HOOK(Spawn)()
 
 #ifdef REGAMEDLL_FIXES
 	m_iClientHideHUD = -1;
+	m_iClientKevlar = ARMOR_NONE;
 #endif
 
 	if (!m_bNotKilled)
@@ -5785,6 +5786,11 @@ void EXT_FUNC CBasePlayer::__API_HOOK(Precache)()
 	m_bitsHUDDamage = -1;
 	m_iClientBattery = -1;
 	m_iTrain = TRAIN_NEW;
+
+#ifdef REGAMEDLL_FIXES
+	m_iClientKevlar = ARMOR_NONE;
+#endif // REGAMEDLL_FIXES
+
 
 	// Make sure any necessary user messages have been registered
 	LinkUserMessages();
@@ -6288,6 +6294,7 @@ void CBasePlayer::ForceClientDllUpdate()
 #ifdef REGAMEDLL_FIXES
 	// fix for https://github.com/ValveSoftware/halflife/issues/1567
 	m_iClientHideHUD = -1;
+	m_iClientKevlar = ARMOR_NONE;
 #endif
 
 	m_iClientHealth = -1;
@@ -7246,6 +7253,21 @@ void EXT_FUNC CBasePlayer::__API_HOOK(UpdateClientData)()
 			WRITE_SHORT(int(pev->armorvalue));
 		MESSAGE_END();
 	}
+
+#ifdef REGAMEDLL_FIXES
+	if (m_iKevlar != m_iClientKevlar)
+	{
+		m_iClientKevlar = m_iKevlar;
+
+		assert(gmsgArmorType > 0);
+
+		// send kevlar type update msg
+		MESSAGE_BEGIN(MSG_ONE, gmsgArmorType, nullptr, pev);
+		WRITE_BYTE(m_iKevlar == ARMOR_VESTHELM ? 1 : 0);
+		MESSAGE_END();
+	}
+#endif // REGAMEDLL_FIXES
+
 
 	if (pev->dmg_take != 0.0f || pev->dmg_save != 0.0f || m_bitsHUDDamage != m_bitsDamageType)
 	{

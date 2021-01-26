@@ -702,6 +702,9 @@ public:
 	bool m_bResumeZoom;
 	float m_flEjectBrass;
 	ArmorType m_iKevlar;
+#ifdef REGAMEDLL_FIXES
+	ArmorType m_iClientKevlar;
+#endif // REGAMEDLL_FIXES
 	bool m_bNotKilled;
 	TeamName m_iTeam;
 	int m_iAccount;
