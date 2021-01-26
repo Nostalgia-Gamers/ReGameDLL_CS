@@ -4415,6 +4415,11 @@ void EXT_FUNC CBasePlayer::__API_HOOK(PreThink)()
 	m_afButtonPressed  = (buttonsChanged & pev->button);		// The changed ones still down are "pressed"
 	m_afButtonReleased = (buttonsChanged & (~pev->button));		// The ones not down are "released"
 
+#ifdef REGAMEDLL_ADD
+	if (CSPlayer()->HasBunnyHop())
+		m_afButtonPressed &= ~IN_JUMP;
+#endif
+	
 	// Hint messages should be updated even if the game is over
 	m_hintMessageQueue.Update(this);
 	g_pGameRules->PlayerThink(this);
