@@ -156,7 +156,7 @@ inline bool CCSPlayer::HasBunnyHop() const
 	if (m_iBunnyHop)
 		return true;
 
-	switch ((int)bunnyhop.value)
+	switch (static_cast<int>(bunnyhop.value))
 	{
 	case 1:
 		return true;

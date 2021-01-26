@@ -2996,11 +2996,11 @@ void PM_PlayerMove(qboolean server)
 			{
 				if (!pLadder)
 				{
-					PM_Jump();
 #ifdef REGAMEDLL_ADD
 					if (UTIL_PlayerByIndex(pmove->player_index + 1)->CSPlayer()->HasBunnyHop())
 						pmove->oldbuttons &= ~IN_JUMP;
 #endif
+					PM_Jump();
 				}
 			}
 			else
