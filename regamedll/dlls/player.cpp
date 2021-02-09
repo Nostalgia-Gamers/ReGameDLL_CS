@@ -163,6 +163,11 @@ LINK_HOOK_CLASS_CHAIN(bool, CBasePlayer, SetClientUserInfoName, (char *infobuffe
 
 bool EXT_FUNC CBasePlayer::__API_HOOK(SetClientUserInfoName)(char *infobuffer, char *szNewName)
 {
+#ifdef REGAMEDLL_ADD
+	if (max_alive_name_changes.value == -2)
+		return false;
+#endif // REGAMEDLL_ADD
+
 	int nClientIndex = entindex();
 
 #ifdef REGAMEDLL_FIXES
@@ -173,13 +178,23 @@ bool EXT_FUNC CBasePlayer::__API_HOOK(SetClientUserInfoName)(char *infobuffer, c
 	}
 #endif
 
-	if (pev->deadflag != DEAD_NO)
+	if (pev->deadflag != DEAD_NO
+#ifdef REGAMEDLL_ADD
+		|| (m_iNickChangesBeforeSpawn > max_alive_name_changes.value && max_alive_name_changes.value >= 0)
+#endif // REGAMEDLL_ADD
+		)
 	{
+
 		m_bHasChangedName = true;
 		Q_snprintf(m_szNewName, sizeof(m_szNewName), "%s", szNewName);
 		ClientPrint(pev, HUD_PRINTTALK, "#Name_change_at_respawn");
 		return false;
 	}
+#ifdef REGAMEDLL_ADD
+	else
+		m_iNickChangesBeforeSpawn++;
+#endif // REGAMEDLL_ADD
+
 
 	// Set the name
 	SET_CLIENT_KEY_VALUE(nClientIndex, infobuffer, "name", szNewName);
@@ -3855,6 +3870,10 @@ void EXT_FUNC CBasePlayer::__API_HOOK(RoundRespawn)()
 		ClientKill(ENT(pev));
 	}
 #endif
+
+#ifdef REGAMEDLL_ADD
+	m_iNickChangesBeforeSpawn = 0;
+#endif // REGAMEDLL_ADD
 
 }
 
