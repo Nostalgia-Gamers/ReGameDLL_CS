@@ -126,6 +126,7 @@ cvar_t show_radioicon               = { "mp_show_radioicon", "1", 0, 1.0f, nullp
 cvar_t show_scenarioicon            = { "mp_show_scenarioicon", "0", FCVAR_SERVER, 0.0f, nullptr };
 cvar_t old_bomb_defused_sound       = { "mp_old_bomb_defused_sound", "1", 0, 1.0f, nullptr };
 cvar_t item_staytime                = { "mp_item_staytime", "300", FCVAR_SERVER, 300.0f, nullptr };
+cvar_t max_alive_name_changes       = { "mp_max_alive_name_changes", "-1", FCVAR_SERVER, -1.0f, nullptr };
 cvar_t legacy_bombtarget_touch      = { "mp_legacy_bombtarget_touch", "1", 0, 1.0f, nullptr };
 cvar_t respawn_immunitytime         = { "mp_respawn_immunitytime", "0", FCVAR_SERVER, 0.0f, nullptr };
 cvar_t respawn_immunity_effects     = { "mp_respawn_immunity_effects", "1", FCVAR_SERVER, 0.0f, nullptr };
@@ -350,6 +351,7 @@ void EXT_FUNC GameDLLInit()
 
 	CVAR_REGISTER(&old_bomb_defused_sound);
 	CVAR_REGISTER(&item_staytime);
+	CVAR_REGISTER(&max_alive_name_changes);
 	CVAR_REGISTER(&legacy_bombtarget_touch);
 	CVAR_REGISTER(&respawn_immunitytime);
 	CVAR_REGISTER(&respawn_immunity_effects);

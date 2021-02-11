@@ -155,6 +155,7 @@ extern cvar_t show_radioicon;
 extern cvar_t show_scenarioicon;
 extern cvar_t old_bomb_defused_sound;
 extern cvar_t item_staytime;
+extern cvar_t max_alive_name_changes;
 extern cvar_t legacy_bombtarget_touch;
 extern cvar_t respawn_immunitytime;
 extern cvar_t respawn_immunity_effects;
