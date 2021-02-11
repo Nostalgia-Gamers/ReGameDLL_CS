@@ -392,13 +392,12 @@ BOOL CItemKevlar::MyTouch(CBasePlayer *pPlayer)
 		WRITE_STRING(STRING(pev->classname));
 	MESSAGE_END();
 
+#ifndef REGAMEDLL_FIXES
 	MESSAGE_BEGIN(MSG_ONE, gmsgArmorType, nullptr, pPlayer->pev);
-#ifdef REGAMEDLL_FIXES
-		WRITE_BYTE(pPlayer->m_iKevlar == ARMOR_KEVLAR ? 0 : 1); // 0 = ARMOR_KEVLAR, 1 = ARMOR_VESTHELM
-#else
-		WRITE_BYTE(0);
-#endif
+	WRITE_BYTE(pPlayer->m_iKevlar == ARMOR_KEVLAR ? 0 : 1); // 0 = ARMOR_KEVLAR, 1 = ARMOR_VESTHELM
+	WRITE_BYTE(0);
 	MESSAGE_END();
+#endif
 
 	if (TheTutor)
 	{
@@ -445,9 +444,11 @@ BOOL CItemAssaultSuit::MyTouch(CBasePlayer *pPlayer)
 		WRITE_STRING(STRING(pev->classname));
 	MESSAGE_END();
 
+#ifndef REGAMEDLL_FIXES
 	MESSAGE_BEGIN(MSG_ONE, gmsgArmorType, nullptr, pPlayer->pev);
-		WRITE_BYTE(1); // 0 = ARMOR_KEVLAR, 1 = ARMOR_VESTHELM
+	WRITE_BYTE(1); // 0 = ARMOR_KEVLAR, 1 = ARMOR_VESTHELM
 	MESSAGE_END();
+#endif // !REGAMEDLL_FIXES
 
 	if (TheTutor)
 	{
