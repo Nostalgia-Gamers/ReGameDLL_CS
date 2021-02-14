@@ -702,9 +702,6 @@ public:
 	bool m_bResumeZoom;
 	float m_flEjectBrass;
 	ArmorType m_iKevlar;
-#ifdef REGAMEDLL_FIXES
-	ArmorType m_iClientKevlar;
-#endif // REGAMEDLL_FIXES
 	bool m_bNotKilled;
 	TeamName m_iTeam;
 	int m_iAccount;
@@ -882,9 +879,6 @@ public:
 	float m_silentTimestamp;
 	MusicState m_musicState;
 	float m_flLastCommandTime[COMMANDS_TO_TRACK];
-#ifdef REGAMEDLL_ADD
-	int m_iNickChangesBeforeSpawn;
-#endif // REGAMEDLL_ADD
 
 
 #ifdef BUILD_LATEST
