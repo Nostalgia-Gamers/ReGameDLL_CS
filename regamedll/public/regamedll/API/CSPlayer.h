@@ -46,7 +46,9 @@ public:
 		m_iWeaponInfiniteAmmo(0),
 		m_iWeaponInfiniteIds(0),
 		m_bCanShootOverride(false),
-		m_bGameForcingRespawn(false)
+		m_bGameForcingRespawn(false),
+		m_iNickChangesBeforeSpawn(0),
+		m_iClientKevlar(ARMOR_NONE)
 	{
 		m_szModel[0] = '\0';
 	}
@@ -125,6 +127,8 @@ public:
 	int m_iWeaponInfiniteIds;
 	bool m_bCanShootOverride;
 	bool m_bGameForcingRespawn;
+	int m_iNickChangesBeforeSpawn;
+	ArmorType m_iClientKevlar;
 };
 
 // Inlines

@@ -179,9 +179,9 @@ bool EXT_FUNC CBasePlayer::__API_HOOK(SetClientUserInfoName)(char *infobuffer, c
 #endif
 
 	if (pev->deadflag != DEAD_NO
-#ifdef REGAMEDLL_ADD
-		|| (m_iNickChangesBeforeSpawn > max_alive_name_changes.value && max_alive_name_changes.value >= 0)
-#endif // REGAMEDLL_ADD
+#ifdef REGAMEDLL_API
+		|| (CSPlayer()->m_iNickChangesBeforeSpawn > max_alive_name_changes.value && max_alive_name_changes.value >= 0)
+#endif // REGAMEDLL_API
 		)
 	{
 
@@ -190,10 +190,10 @@ bool EXT_FUNC CBasePlayer::__API_HOOK(SetClientUserInfoName)(char *infobuffer, c
 		ClientPrint(pev, HUD_PRINTTALK, "#Name_change_at_respawn");
 		return false;
 	}
-#ifdef REGAMEDLL_ADD
+#ifdef REGAMEDLL_API
 	else
-		m_iNickChangesBeforeSpawn++;
-#endif // REGAMEDLL_ADD
+		CSPlayer()->m_iNickChangesBeforeSpawn++;
+#endif // REGAMEDLL_API
 
 
 	// Set the name
@@ -3871,9 +3871,9 @@ void EXT_FUNC CBasePlayer::__API_HOOK(RoundRespawn)()
 	}
 #endif
 
-#ifdef REGAMEDLL_ADD
-	m_iNickChangesBeforeSpawn = 0;
-#endif // REGAMEDLL_ADD
+#ifdef REGAMEDLL_API
+	CSPlayer()->m_iNickChangesBeforeSpawn = 0;
+#endif // REGAMEDLL_API
 
 }
 
@@ -5651,7 +5651,9 @@ void EXT_FUNC CBasePlayer::__API_HOOK(Spawn)()
 
 #ifdef REGAMEDLL_FIXES
 	m_iClientHideHUD = -1;
-	m_iClientKevlar = ARMOR_NONE;
+#ifdef REGAMEDLL_API
+	CSPlayer()->m_iClientKevlar = ARMOR_NONE;
+#endif // REGAMEDLL_API
 #endif
 
 	if (!m_bNotKilled)
@@ -5787,9 +5789,9 @@ void EXT_FUNC CBasePlayer::__API_HOOK(Precache)()
 	m_iClientBattery = -1;
 	m_iTrain = TRAIN_NEW;
 
-#ifdef REGAMEDLL_FIXES
-	m_iClientKevlar = ARMOR_NONE;
-#endif // REGAMEDLL_FIXES
+#ifdef REGAMEDLL_API
+	CSPlayer()->m_iClientKevlar = ARMOR_NONE;
+#endif // REGAMEDLL_API
 
 
 	// Make sure any necessary user messages have been registered
@@ -6294,7 +6296,9 @@ void CBasePlayer::ForceClientDllUpdate()
 #ifdef REGAMEDLL_FIXES
 	// fix for https://github.com/ValveSoftware/halflife/issues/1567
 	m_iClientHideHUD = -1;
-	m_iClientKevlar = ARMOR_NONE;
+#ifdef REGAMEDLL_API
+	CSPlayer()->m_iClientKevlar = ARMOR_NONE;
+#endif // REGAMEDLL_API
 #endif
 
 	m_iClientHealth = -1;
@@ -7254,10 +7258,10 @@ void EXT_FUNC CBasePlayer::__API_HOOK(UpdateClientData)()
 		MESSAGE_END();
 	}
 
-#ifdef REGAMEDLL_FIXES
-	if (m_iKevlar != m_iClientKevlar)
+#ifdef REGAMEDLL_API
+	if (m_iKevlar != CSPlayer()->m_iClientKevlar)
 	{
-		m_iClientKevlar = m_iKevlar;
+		CSPlayer()->m_iClientKevlar = m_iKevlar;
 
 		assert(gmsgArmorType > 0);
 
@@ -7266,7 +7270,7 @@ void EXT_FUNC CBasePlayer::__API_HOOK(UpdateClientData)()
 		WRITE_BYTE(m_iKevlar == ARMOR_VESTHELM ? 1 : 0);
 		MESSAGE_END();
 	}
-#endif // REGAMEDLL_FIXES
+#endif // REGAMEDLL_API
 
 
 	if (pev->dmg_take != 0.0f || pev->dmg_save != 0.0f || m_bitsHUDDamage != m_bitsDamageType)
