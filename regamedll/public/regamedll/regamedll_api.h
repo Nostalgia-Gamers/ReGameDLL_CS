@@ -448,6 +448,10 @@ typedef IHookChainRegistryClass<void, class CBasePlayer> IReGameHookRegistry_CBa
 typedef IHookChainClass<BOOL, class CBasePlayerWeapon> IReGameHook_CBasePlayerWeapon_CanDeploy;
 typedef IHookChainRegistryClass<BOOL, class CBasePlayerWeapon> IReGameHookRegistry_CBasePlayerWeapon_CanDeploy;
 
+// CBasePlayerWeapon::Holster hook
+typedef IHookChainClass<void, class CBasePlayerWeapon, int> IReGameHook_CBasePlayerWeapon_Holster;
+typedef IHookChainRegistryClass<void, class CBasePlayerWeapon, int> IReGameHookRegistry_CBasePlayerWeapon_Holster;
+
 // CBasePlayerWeapon::DefaultDeploy hook
 typedef IHookChainClass<BOOL, class CBasePlayerWeapon, char *, char *, int, char *, int> IReGameHook_CBasePlayerWeapon_DefaultDeploy;
 typedef IHookChainRegistryClass<BOOL, class CBasePlayerWeapon, char *, char *, int, char *, int> IReGameHookRegistry_CBasePlayerWeapon_DefaultDeploy;
@@ -612,6 +616,7 @@ public:
 	virtual IReGameHookRegistry_CBasePlayer_HintMessageEx *CBasePlayer_HintMessageEx() = 0;
 	virtual IReGameHookRegistry_CBasePlayer_UseEmpty *CBasePlayer_UseEmpty() = 0;
 	virtual IReGameHookRegistry_CBasePlayerWeapon_CanDeploy *CBasePlayerWeapon_CanDeploy() = 0;
+	virtual IReGameHookRegistry_CBasePlayerWeapon_Holster *CBasePlayerWeapon_Holster() = 0;
 	virtual IReGameHookRegistry_CBasePlayerWeapon_DefaultDeploy *CBasePlayerWeapon_DefaultDeploy() = 0;
 	virtual IReGameHookRegistry_CBasePlayerWeapon_DefaultReload *CBasePlayerWeapon_DefaultReload() = 0;
 	virtual IReGameHookRegistry_CBasePlayerWeapon_DefaultShotgunReload *CBasePlayerWeapon_DefaultShotgunReload() = 0;

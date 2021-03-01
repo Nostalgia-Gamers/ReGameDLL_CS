@@ -1497,7 +1497,9 @@ int CBasePlayerWeapon::SecondaryAmmoIndex()
 	return -1;
 }
 
-void CBasePlayerWeapon::Holster(int skiplocal)
+LINK_HOOK_CLASS_VOID_CHAIN(CBasePlayerWeapon, Holster, (int skiplocal), skiplocal)
+
+void EXT_FUNC CBasePlayerWeapon::__API_HOOK(Holster)(int skiplocal)
 {
 	// cancel any reload in progress.
 	m_fInReload = FALSE;

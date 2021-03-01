@@ -399,6 +399,7 @@ public:
 
 #ifdef REGAMEDLL_API
 	BOOL CanDeploy_OrigFunc();
+	void Holster_OrigFunc(int skiplocal);
 	BOOL DefaultDeploy_OrigFunc(char *szViewModel, char *szWeaponModel, int iAnim, char *szAnimExt, int skiplocal);
 	BOOL DefaultReload_OrigFunc(int iClipSize, int iAnim, float fDelay);
 	bool DefaultShotgunReload_OrigFunc(int iAnim, int iStartAnim, float fDelay, float fStartDelay, const char *pszReloadSound1, const char *pszReloadSound2);
