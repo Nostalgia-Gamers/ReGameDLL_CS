@@ -881,6 +881,16 @@ BOOL EXT_FUNC CBasePlayer::__API_HOOK(TakeDamage)(entvars_t *pevInflictor, entva
 
 				pAttack = CBasePlayer::Instance(pevAttacker);
 
+#ifdef REGAMEDLL_FIXES
+				if (!g_pGameRules->FPlayerCanTakeDamage(this, pAttack))
+				{
+					/* if cvar friendlyfire is disabled or isn't freeforall
+					and the victim is teammate then ignore this damage */
+
+					return FALSE;
+				}
+#endif // REGAMEDLL_FIXES
+
 				if (
 #ifdef REGAMEDLL_ADD
 					!CSGameRules()->IsFreeForAll() &&
@@ -902,12 +912,14 @@ BOOL EXT_FUNC CBasePlayer::__API_HOOK(TakeDamage)(entvars_t *pevInflictor, entva
 						flDamage *= clamp(ff_damage_reduction_grenade_self.value, 0.0f, 1.0f);
 #endif
 					}
+#ifndef REGAMEDLL_FIXES
 					else
 					{
 						// if cvar friendlyfire is disabled
 						// and if the victim is teammate then ignore this damage
 						return FALSE;
 					}
+#endif // !REGAMEDLL_FIXES
 				}
 			}
 		}
