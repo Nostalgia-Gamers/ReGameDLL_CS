@@ -163,10 +163,9 @@ cvar_t sv_autobunnyhopping               = { "sv_autobunnyhopping", "0", 0, 0.0f
 cvar_t sv_enablebunnyhopping             = { "sv_enablebunnyhopping", "0", 0, 0.0f, nullptr };
 cvar_t plant_c4_anywhere                 = { "mp_plant_c4_anywhere", "0", 0, 0.0f, nullptr };
 cvar_t give_c4_frags                     = { "mp_give_c4_frags", "3", 0, 3.0f, nullptr };
-
-cvar_t hostages_rescued_ratio = { "mp_hostages_rescued_ratio", "1.0", 0, 1.0f, nullptr };
-
-cvar_t legacy_vehicle_block               = { "mp_legacy_vehicle_block", "1", 0, 0.0f, nullptr };
+cvar_t hostages_rescued_ratio            = { "mp_hostages_rescued_ratio", "1.0", 0, 1.0f, nullptr };
+cvar_t legacy_vehicle_block              = { "mp_legacy_vehicle_block", "1", 0, 0.0f, nullptr };
+cvar_t max_alive_name_changes            = { "mp_max_alive_name_changes", "-1", 0, -1.0f, nullptr };
 
 void GameDLL_Version_f()
 {
@@ -408,11 +407,15 @@ void EXT_FUNC GameDLLInit()
 	CVAR_REGISTER(&sv_autobunnyhopping);
 	CVAR_REGISTER(&sv_enablebunnyhopping);
 	CVAR_REGISTER(&plant_c4_anywhere);
+<<<<<<< HEAD
 	CVAR_REGISTER(&give_c4_frags);
 
 	CVAR_REGISTER(&hostages_rescued_ratio);
 
 	CVAR_REGISTER(&legacy_vehicle_block);
+=======
+	CVAR_REGISTER(&max_alive_name_changes);
+>>>>>>> d6d78dd (CVar `mp_max_alive_name_changes`)
 
 	// print version
 	CONSOLE_ECHO("ReGameDLL version: " APP_VERSION "\n");

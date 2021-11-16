@@ -173,6 +173,11 @@ bool EXT_FUNC CBasePlayer::__API_HOOK(SetClientUserInfoName)(char *infobuffer, c
 	}
 #endif
 
+#ifdef REGAMEDLL_API
+	if (!CSPlayer()->CanChangeName())
+		return false;
+#endif
+
 	if (pev->deadflag != DEAD_NO)
 	{
 		m_bHasChangedName = true;
@@ -190,6 +195,10 @@ bool EXT_FUNC CBasePlayer::__API_HOOK(SetClientUserInfoName)(char *infobuffer, c
 		WRITE_STRING(STRING(pev->netname));
 		WRITE_STRING(szNewName);
 	MESSAGE_END();
+
+#ifdef REGAMEDLL_API
+	CSPlayer()->m_iAliveNameChanges++;
+#endif
 
 	UTIL_LogPrintf("\"%s<%i><%s><%s>\" changed name to \"%s\"\n", STRING(pev->netname), GETPLAYERUSERID(edict()), GETPLAYERAUTHID(edict()), GetTeam(m_iTeam), szNewName);
 	return true;
