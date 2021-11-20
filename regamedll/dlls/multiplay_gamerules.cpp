@@ -608,7 +608,7 @@ void EXT_FUNC CHalfLifeMultiplay::__API_HOOK(CleanUpMap)()
 {
 #ifdef REGAMEDLL_FIXES
 #ifdef REGAMEDLL_ADD
-	if (legacy_restart_entities.value > 0)
+	if (!(bool)legacy_restart_entities.value)
 #endif
 	{
 		UTIL_RestartOther("multi_manager");
@@ -628,7 +628,7 @@ void EXT_FUNC CHalfLifeMultiplay::__API_HOOK(CleanUpMap)()
 
 #ifdef REGAMEDLL_FIXES
 #ifdef REGAMEDLL_ADD
-	if (legacy_restart_entities.value > 0)
+	if (!(bool)legacy_restart_entities.value)
 #endif
 	{
 		UTIL_RestartOther("func_button");
@@ -650,7 +650,7 @@ void EXT_FUNC CHalfLifeMultiplay::__API_HOOK(CleanUpMap)()
 
 #ifdef REGAMEDLL_FIXES
 #ifdef REGAMEDLL_ADD
-	if (legacy_restart_entities.value > 0)
+	if (!(bool)legacy_restart_entities.value)
 #endif
 	{
 		UTIL_RestartOther("trigger_once");
