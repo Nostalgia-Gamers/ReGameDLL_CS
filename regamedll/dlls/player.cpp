@@ -173,12 +173,19 @@ bool EXT_FUNC CBasePlayer::__API_HOOK(SetClientUserInfoName)(char *infobuffer, c
 	}
 #endif
 
-#ifdef REGAMEDLL_API
-	if (!CSPlayer()->CanChangeName())
+#ifdef REGAMEDLL_ADD
+	if (max_alive_name_changes.value <= 0)
+	{
+		ClientPrint(pev, HUD_PRINTCENTER, "#Command_Not_Available");
 		return false;
+	}
 #endif
 
-	if (pev->deadflag != DEAD_NO)
+	if (pev->deadflag != DEAD_NO
+#if defined REGAMEDLL_API && REGAMEDLL_ADD
+		|| CSPlayer()->m_iAliveNameChanges >= max_alive_name_changes.value
+#endif
+		)
 	{
 		m_bHasChangedName = true;
 		Q_snprintf(m_szNewName, sizeof(m_szNewName), "%s", szNewName);
