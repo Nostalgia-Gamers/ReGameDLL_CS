@@ -163,6 +163,7 @@ cvar_t sv_autobunnyhopping               = { "sv_autobunnyhopping", "0", 0, 0.0f
 cvar_t sv_enablebunnyhopping             = { "sv_enablebunnyhopping", "0", 0, 0.0f, nullptr };
 cvar_t plant_c4_anywhere                 = { "mp_plant_c4_anywhere", "0", 0, 0.0f, nullptr };
 cvar_t max_alive_name_changes            = { "mp_max_alive_name_changes", "-1", 0, -1.0f, nullptr };
+cvar_t legacy_restart_entities           = { "sv_legacy_restart_entities", "0", 0, 0.0f, nullptr };
 
 void GameDLL_Version_f()
 {
@@ -395,6 +396,7 @@ void EXT_FUNC GameDLLInit()
 	CVAR_REGISTER(&sv_enablebunnyhopping);
 	CVAR_REGISTER(&plant_c4_anywhere);
 	CVAR_REGISTER(&max_alive_name_changes);
+	CVAR_REGISTER(&legacy_restart_entities);
 
 	// print version
 	CONSOLE_ECHO("ReGameDLL version: " APP_VERSION "\n");

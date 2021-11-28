@@ -104,6 +104,7 @@ This means that plugins that do binary code analysis (Orpheu for example) probab
 | sv_enablebunnyhopping              | 0       | 0   | 1            | Allow player speed to exceed maximum running speed.<br/>`0` disabled <br/>`1` enabled |
 | mp_plant_c4_anywhere               | 0       | 0   | 1            | When set, players can plant anywhere, not only in bombsites.<br/>`0` disabled <br/>`1` enabled |
 | mp_max_alive_name_changes          | -1      | -1  | -            | Maximum amount of nickname changes when alive<br/>`-1` unlimited<br/>`0` Blocks name changes </br>`>0` Allow to change arbitrary amount of nicks |
+| sv_legacy_restart_entities         | 0       | 0   | 1            | Legacy restart of entities on new round<br/>`0` disabled<br/>`1` enabled |
 </details>
 
 ## How to install zBot for CS 1.6?
