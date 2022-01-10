@@ -107,7 +107,6 @@ public:
 	void OnKilled();
 
 	CBasePlayer *BasePlayer() const;
-	bool CanChangeName() const;
 
 public:
 	enum EProtectionState
@@ -135,16 +134,6 @@ public:
 	bool m_bPlantC4Anywhere;
 	int m_iAliveNameChanges;
 };
-
-inline bool CCSPlayer::CanChangeName() const
-{
-#ifdef REGAMEDLL_ADD
-	if (max_alive_name_changes.value >= 0 && m_iAliveNameChanges >= max_alive_name_changes.value)
-		return false;
-#endif
-
-	return true;
-}
 
 // Inlines
 inline CBasePlayer *CCSPlayer::BasePlayer() const
