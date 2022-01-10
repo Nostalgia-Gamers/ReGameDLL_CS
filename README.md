@@ -109,6 +109,7 @@ This means that plugins that do binary code analysis (Orpheu for example) probab
 | mp_legacy_vehicle_block            | 1       | 0   | 1            | Legacy func_vehicle behavior when blocked by another entity.<br/>`0` New behavior <br/>`1` Legacy behavior |
 | mp_max_alive_name_changes          | -1      | -1  | -            | Maximum amount of nickname changes when alive<br/>`-1` unlimited<br/>`0` Blocks name changes </br>`>0` Allow to change arbitrary amount of nicks |
 | sv_legacy_restart_entities         | 0       | 0   | 1            | Legacy restart of entities on new round<br/>`0` disabled<br/>`1` enabled |
+| sv_block_vote_commands             | 0       | 0   | 1            | When set, blocks `vote` and `votemap` commands.<br/>`0` disabled <br/>`1` enabled |
 </details>
 
 ## How to install zBot for CS 1.6?
