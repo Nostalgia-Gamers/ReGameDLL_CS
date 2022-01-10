@@ -188,6 +188,8 @@ extern cvar_t allchat;
 extern cvar_t sv_autobunnyhopping;
 extern cvar_t sv_enablebunnyhopping;
 extern cvar_t plant_c4_anywhere;
+extern cvar_t max_alive_name_changes;
+extern cvar_t legacy_restart_entities;
 extern cvar_t sv_block_vote_commands;
 
 #endif

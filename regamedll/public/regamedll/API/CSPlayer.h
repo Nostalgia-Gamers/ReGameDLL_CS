@@ -49,7 +49,8 @@ public:
 		m_bGameForcingRespawn(false),
 		m_bAutoBunnyHopping(false),
 		m_bMegaBunnyJumping(false),
-		m_bPlantC4Anywhere(false)
+		m_bPlantC4Anywhere(false),
+		m_iAliveNameChanges(0)
 	{
 		m_szModel[0] = '\0';
 	}
@@ -106,6 +107,7 @@ public:
 	void OnKilled();
 
 	CBasePlayer *BasePlayer() const;
+	bool CanChangeName() const;
 
 public:
 	enum EProtectionState
@@ -131,7 +133,18 @@ public:
 	bool m_bAutoBunnyHopping;
 	bool m_bMegaBunnyJumping;
 	bool m_bPlantC4Anywhere;
+	int m_iAliveNameChanges;
 };
+
+inline bool CCSPlayer::CanChangeName() const
+{
+#ifdef REGAMEDLL_ADD
+	if (max_alive_name_changes.value >= 0 && m_iAliveNameChanges >= max_alive_name_changes.value)
+		return false;
+#endif
+
+	return true;
+}
 
 // Inlines
 inline CBasePlayer *CCSPlayer::BasePlayer() const
