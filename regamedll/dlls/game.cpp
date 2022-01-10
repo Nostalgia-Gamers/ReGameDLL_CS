@@ -164,6 +164,8 @@ cvar_t sv_enablebunnyhopping             = { "sv_enablebunnyhopping", "0", 0, 0.
 cvar_t plant_c4_anywhere                 = { "mp_plant_c4_anywhere", "0", 0, 0.0f, nullptr };
 cvar_t max_alive_name_changes            = { "mp_max_alive_name_changes", "-1", 0, -1.0f, nullptr };
 cvar_t legacy_restart_entities           = { "sv_legacy_restart_entities", "0", 0, 0.0f, nullptr };
+cvar_t sv_block_vote_commands            = { "sv_block_vote_commands", "0", 0, 0.0f, nullptr };
+
 
 void GameDLL_Version_f()
 {
