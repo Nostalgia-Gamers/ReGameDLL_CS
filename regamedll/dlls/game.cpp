@@ -416,6 +416,7 @@ void EXT_FUNC GameDLLInit()
 
 	CVAR_REGISTER(&max_alive_name_changes);
 	CVAR_REGISTER(&legacy_restart_entities);
+	CVAR_REGISTER(&sv_block_vote_commands);
 
 	// print version
 	CONSOLE_ECHO("ReGameDLL version: " APP_VERSION "\n");
