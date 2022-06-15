@@ -2118,6 +2118,11 @@ void EXT_FUNC CBasePlayer::__API_HOOK(Killed)(entvars_t *pevAttacker, int iGib)
 
 			pObserver->m_bNightVisionOn = false;
 		}
+
+#ifdef REGAMEDLL_FIXES
+		if (pObserver->m_hObserverTarget == this)
+			pObserver->m_flNextFollowTime = 0.0f;
+#endif
 	}
 
 	if (m_pTank)
@@ -6678,7 +6683,7 @@ void CBasePlayer::HandleSignals()
 				m_signals.Signal(SIGNAL_BOMB);
 			}
 		}
-#endif 
+#endif
 
 		if (!CSGameRules()->m_bMapHasBombZone)
 			OLD_CheckBombTarget(this);
@@ -7198,7 +7203,7 @@ void EXT_FUNC CBasePlayer::__API_HOOK(UpdateClientData)()
 				m_iClientHideHUD = 0;
 
 			int hudChanged = m_iClientHideHUD ^ m_iHideHUD;
-			if (hudChanged & (HIDEHUD_FLASHLIGHT | HIDEHUD_HEALTH | HIDEHUD_TIMER | HIDEHUD_MONEY))
+			if (hudChanged & (HIDEHUD_FLASHLIGHT | HIDEHUD_HEALTH | HIDEHUD_TIMER | HIDEHUD_MONEY | HIDEHUD_CROSSHAIR))
 			{
 				MESSAGE_BEGIN(MSG_ONE, gmsgCrosshair, nullptr, pev);
 					WRITE_BYTE(0);
@@ -8412,7 +8417,13 @@ void CStripWeapons::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE 
 		{
 			if (m_iszSpecialItem)
 			{
-				pPlayer->CSPlayer()->RemovePlayerItem(STRING(m_iszSpecialItem));
+				const char *weaponName = STRING(m_iszSpecialItem);
+				WeaponSlotInfo *slotInfo = GetWeaponSlot(weaponName);
+
+				if (slotInfo != nullptr && slotInfo->slot == GRENADE_SLOT)
+					pPlayer->CSPlayer()->RemovePlayerItemEx(weaponName, true);
+				else
+					pPlayer->CSPlayer()->RemovePlayerItem(weaponName);
 			}
 
 			for (int slot = PRIMARY_WEAPON_SLOT; slot <= ALL_OTHER_ITEMS; slot++)
@@ -8433,7 +8444,11 @@ void CStripWeapons::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE 
 				{
 					pPlayer->ForEachItem(slot, [pPlayer](CBasePlayerItem *pItem)
 					{
-						pPlayer->CSPlayer()->RemovePlayerItem(STRING(pItem->pev->classname));
+						if (pItem->iItemSlot() == GRENADE_SLOT)
+							pPlayer->CSPlayer()->RemovePlayerItemEx(STRING(pItem->pev->classname), true);
+						else
+							pPlayer->CSPlayer()->RemovePlayerItem(STRING(pItem->pev->classname));
+
 						return false;
 					});
 				}
@@ -10236,7 +10251,7 @@ void EXT_FUNC CBasePlayer::__API_HOOK(SetSpawnProtection)(float flProtectionTime
 		pev->rendermode = kRenderTransAdd;
 		pev->renderamt  = 100.0f;
 
-		MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmsgStatusIcon, nullptr, pev);
+		MESSAGE_BEGIN(MSG_ONE, gmsgStatusIcon, nullptr, pev);
 			WRITE_BYTE(STATUSICON_FLASH);
 			WRITE_STRING("suithelmet_full");
 			WRITE_BYTE(0);
