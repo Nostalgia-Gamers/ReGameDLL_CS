@@ -4817,7 +4817,8 @@ int EXT_FUNC GetWeaponData(edict_t *pEdict, struct weapon_data_s *info)
 				Q_memset(&II, 0, sizeof(II));
 
 #ifdef REGAMEDLL_API
-				pPlayerItem->CSPlayerItem()->GetItemInfo(&II);
+				weapon->CSPlayerItem()->GetItemInfo(&II);
+				//pPlayerItem->CSPlayerItem()->GetItemInfo(&II);
 #else
 				weapon->GetItemInfo(&II);
 #endif
