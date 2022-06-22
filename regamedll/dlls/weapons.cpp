@@ -814,13 +814,6 @@ bool CBasePlayerWeapon::HasSecondaryAttack()
 		return true;
 	}
 
-#ifdef REGAMEDLL_API
-	if (CSPlayerWeapon()->m_bHasSecondaryAttack)
-	{
-		return true;
-	}
-#endif
-
 	switch (m_iId)
 	{
 	case WEAPON_AK47:
@@ -887,7 +880,11 @@ void CBasePlayerWeapon::ItemPostFrame()
 {
 	int usableButtons = m_pPlayer->pev->button;
 
-	if (!HasSecondaryAttack())
+#ifdef REGAMEDLL_API
+	if (!CSPlayerWeapon()->m_bHasSecondaryAttack)
+#else
+	if (!HasSecondaryWeapon())
+#endif
 	{
 		usableButtons &= ~IN_ATTACK2;
 	}
