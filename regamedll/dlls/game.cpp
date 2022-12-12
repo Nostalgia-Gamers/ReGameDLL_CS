@@ -162,6 +162,7 @@ cvar_t allchat                           = { "sv_allchat", "0", 0, 0.0f, nullptr
 cvar_t sv_autobunnyhopping               = { "sv_autobunnyhopping", "0", 0, 0.0f, nullptr };
 cvar_t sv_enablebunnyhopping             = { "sv_enablebunnyhopping", "0", 0, 0.0f, nullptr };
 cvar_t plant_c4_anywhere                 = { "mp_plant_c4_anywhere", "0", 0, 0.0f, nullptr };
+<<<<<<< HEAD
 cvar_t give_c4_frags                     = { "mp_give_c4_frags", "3", 0, 3.0f, nullptr };
 cvar_t hostages_rescued_ratio            = { "mp_hostages_rescued_ratio", "1.0", 0, 1.0f, nullptr };
 cvar_t legacy_vehicle_block              = { "mp_legacy_vehicle_block", "1", 0, 0.0f, nullptr };
@@ -169,6 +170,12 @@ cvar_t legacy_vehicle_block              = { "mp_legacy_vehicle_block", "1", 0, 
 cvar_t max_alive_name_changes            = { "mp_max_alive_name_changes", "-1", 0, -1.0f, nullptr };
 cvar_t legacy_restart_entities           = { "sv_legacy_restart_entities", "0", 0, 0.0f, nullptr };
 cvar_t sv_block_vote_commands            = { "sv_block_vote_commands", "0", 0, 0.0f, nullptr };
+=======
+cvar_t max_alive_name_changes            = { "mp_max_alive_name_changes", "-1", 0, -1.0f, nullptr };
+cvar_t legacy_restart_entities           = { "sv_legacy_restart_entities", "0", 0, 0.0f, nullptr };
+cvar_t sv_block_vote_commands            = { "sv_block_vote_commands", "0", 0, 0.0f, nullptr };
+
+>>>>>>> 86a9f2d6bfbc60dd02933c86d82e6956718745c5
 
 void GameDLL_Version_f()
 {
