@@ -911,11 +911,7 @@ void EXT_FUNC CBasePlayerWeapon::__API_HOOK(ItemPostFrame)()
 {
 	int usableButtons = m_pPlayer->pev->button;
 
-#ifdef REGAMEDLL_API
-	if (!CSPlayerWeapon()->m_bHasSecondaryAttack)
-#else
-	if (!HasSecondaryWeapon())
-#endif
+	if (!HasSecondaryAttack())
 	{
 		usableButtons &= ~IN_ATTACK2;
 	}
@@ -1860,11 +1856,11 @@ void CWeaponBox::Touch(CBaseEntity *pOther)
 
 	bool bRemove = true;
 
-#ifdef REGAMEDLL_FIXES 
+#ifdef REGAMEDLL_FIXES
 	CBasePlayerItem *givenItem = nullptr;
 #else
 	bool givenItem = false;
-#endif 
+#endif
 
 	// go through my weapons and try to give the usable ones to the player.
 	// it's important the the player be given ammo first, so the weapons code doesn't refuse
@@ -2059,7 +2055,7 @@ void CWeaponBox::Touch(CBaseEntity *pOther)
 					pItem->AttachToPlayer(pPlayer);
 #ifdef REGAMEDLL_FIXES
 					givenItem = pItem;
-#else 
+#else
 					givenItem = true;
 #endif
 				}
@@ -2099,13 +2095,13 @@ void CWeaponBox::Touch(CBaseEntity *pOther)
 	{
 		EMIT_SOUND(ENT(pPlayer->pev), CHAN_ITEM, "items/gunpickup2.wav", VOL_NORM, ATTN_NORM);
 
-#ifdef REGAMEDLL_FIXES 
+#ifdef REGAMEDLL_FIXES
 		// BUGBUG: weaponbox links gun to player, then ammo is given
 		// so FShouldSwitchWeapon's CanHolster (which checks ammo) check inside AddPlayerItem
 		// return FALSE, causing an unarmed player to not deploy any weaponbox grenade
 		if (pPlayer->m_pActiveItem != givenItem && CSGameRules()->FShouldSwitchWeapon(pPlayer, givenItem))
 		{
-			// This re-check is done after ammo is given 
+			// This re-check is done after ammo is given
 			// so it ensures player properly deploys grenade from floor
 			pPlayer->SwitchWeapon(givenItem);
 		}
