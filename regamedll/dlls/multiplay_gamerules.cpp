@@ -3088,7 +3088,7 @@ void CHalfLifeMultiplay::CheckLevelInitialized()
 		// This determines the maximum number of players allowed on each
 		m_iSpawnPointCount_Terrorist = UTIL_CountEntities("info_player_deathmatch");
 		m_iSpawnPointCount_CT = UTIL_CountEntities("info_player_start");
-#ifdef REGAMEDLL_FIXES 
+#ifdef REGAMEDLL_FIXES
 		m_bMapHasCameras = UTIL_CountEntities("trigger_camera");
 #endif
 		m_bLevelInitialized = true;
@@ -3582,7 +3582,7 @@ void CHalfLifeMultiplay::ClientDisconnected(edict_t *pClient)
 			{
 				pPlayer->DropPlayerItem("weapon_c4");
 			}
-	
+
 			if (pPlayer->m_bHasDefuser)
 			{
 #ifdef REGAMEDLL_FIXES
@@ -3929,6 +3929,10 @@ void EXT_FUNC CHalfLifeMultiplay::__API_HOOK(PlayerKilled)(CBasePlayer *pVictim,
 	pVictim->m_iTrain = (TRAIN_NEW | TRAIN_OFF);
 	SET_VIEW(ENT(pVictim->pev), ENT(pVictim->pev));
 
+#ifdef REGAMEDLL_FIXES
+	int iKillerFrags = 0;
+#endif
+
 	CBasePlayer *peKiller = nullptr;
 	CBaseEntity *ktmp = CBaseEntity::Instance(pKiller);
 
@@ -3955,7 +3959,11 @@ void EXT_FUNC CHalfLifeMultiplay::__API_HOOK(PlayerKilled)(CBasePlayer *pVictim,
 	if (pVictim->pev == pKiller)
 	{
 		// Players lose a frag for killing themselves
+#ifdef REGAMEDLL_FIXES
+		iKillerFrags = -1;
+#else
 		pKiller->frags -= 1;
+#endif
 	}
 	else if (peKiller && peKiller->IsPlayer())
 	{
@@ -3965,7 +3973,11 @@ void EXT_FUNC CHalfLifeMultiplay::__API_HOOK(PlayerKilled)(CBasePlayer *pVictim,
 		if (g_pGameRules->PlayerRelationship(pVictim, killer) == GR_TEAMMATE)
 		{
 			// if a player dies by from teammate
+#ifdef REGAMEDLL_FIXES
+			iKillerFrags = -IPointsForKill(peKiller, pVictim);
+#else
 			pKiller->frags -= IPointsForKill(peKiller, pVictim);
+#endif
 
 			killer->AddAccount(PAYBACK_FOR_KILLED_TEAMMATES, RT_TEAMMATES_KILLED);
 			killer->m_iTeamKills++;
@@ -4005,7 +4017,11 @@ void EXT_FUNC CHalfLifeMultiplay::__API_HOOK(PlayerKilled)(CBasePlayer *pVictim,
 		else
 		{
 			// if a player dies in a deathmatch game and the killer is a client, award the killer some points
+#ifdef REGAMEDLL_FIXES
+			iKillerFrags = IPointsForKill(peKiller, pVictim);
+#else
 			pKiller->frags += IPointsForKill(peKiller, pVictim);
+#endif
 
 			if (pVictim->m_bIsVIP)
 			{
@@ -4037,7 +4053,11 @@ void EXT_FUNC CHalfLifeMultiplay::__API_HOOK(PlayerKilled)(CBasePlayer *pVictim,
 	else
 	{
 		// killed by the world
+#ifdef REGAMEDLL_FIXES
+		iKillerFrags = -1;
+#else
 		pKiller->frags -= 1;
+#endif
 	}
 
 	// update the scores
@@ -4060,7 +4080,9 @@ void EXT_FUNC CHalfLifeMultiplay::__API_HOOK(PlayerKilled)(CBasePlayer *pVictim,
 	if (ep && ep->Classify() == CLASS_PLAYER)
 	{
 		CBasePlayer *PK = static_cast<CBasePlayer *>(ep);
-
+#ifdef REGAMEDLL_FIXES
+		PK->AddPoints(iKillerFrags, TRUE);
+#else
 		MESSAGE_BEGIN(MSG_ALL, gmsgScoreInfo);
 			WRITE_BYTE(ENTINDEX(PK->edict()));
 			WRITE_SHORT(int(PK->pev->frags));
@@ -4068,7 +4090,7 @@ void EXT_FUNC CHalfLifeMultiplay::__API_HOOK(PlayerKilled)(CBasePlayer *pVictim,
 			WRITE_SHORT(0);
 			WRITE_SHORT(PK->m_iTeam);
 		MESSAGE_END();
-
+#endif
 		// let the killer paint another decal as soon as he'd like.
 		PK->m_flNextDecalTime = gpGlobals->time;
 	}
@@ -5131,7 +5153,11 @@ void CHalfLifeMultiplay::ChangePlayerTeam(CBasePlayer *pPlayer, const char *pTea
 			pPlayer->Killed(pPlayer->pev, bGib ? GIB_ALWAYS : GIB_NEVER);
 
 			// add 1 to frags to balance out the 1 subtracted for killing yourself
+#ifdef REGAMEDLL_FIXES
+			pPlayer->AddPoints(1, TRUE);
+#else
 			pPlayer->pev->frags++;
+#endif
 		}
 
 		pPlayer->m_iTeam = newTeam;

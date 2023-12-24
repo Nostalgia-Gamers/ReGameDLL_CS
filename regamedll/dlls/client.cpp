@@ -673,7 +673,7 @@ void EXT_FUNC ClientPutInServer(edict_t *pEntity)
 	CBaseEntity *pTarget = nullptr;
 	pPlayer->m_pIntroCamera = UTIL_FindEntityByClassname(nullptr, "trigger_camera");
 
-#ifndef REGAMEDLL_FIXES 
+#ifndef REGAMEDLL_FIXES
 	if (g_pGameRules && g_pGameRules->IsMultiplayer())
 	{
 		CSGameRules()->m_bMapHasCameras = (pPlayer->m_pIntroCamera != nullptr);
@@ -696,8 +696,8 @@ void EXT_FUNC ClientPutInServer(edict_t *pEntity)
 		pPlayer->pev->angles = CamAngles;
 		pPlayer->pev->v_angle = pPlayer->pev->angles;
 
-		pPlayer->m_fIntroCamTime = 
-#ifdef REGAMEDLL_FIXES 
+		pPlayer->m_fIntroCamTime =
+#ifdef REGAMEDLL_FIXES
 			(CSGameRules()->m_bMapHasCameras <= 1) ? 0.0 : // no need to refresh cameras if map has only one
 #endif
 			gpGlobals->time + 6;
@@ -1754,6 +1754,9 @@ BOOL EXT_FUNC __API_HOOK(HandleMenu_ChooseTeam)(CBasePlayer *pPlayer, int slot)
 	}
 
 	TeamName team = UNASSIGNED;
+#ifdef REGAMEDLL_FIXES
+	bool bAddFrags = false;
+#endif
 
 	switch (slot)
 	{
@@ -1839,7 +1842,11 @@ BOOL EXT_FUNC __API_HOOK(HandleMenu_ChooseTeam)(CBasePlayer *pPlayer, int slot)
 				if (pPlayer->Kill())
 				{
 					// add 1 to frags to balance out the 1 subtracted for killing yourself
+#ifdef REGAMEDLL_FIXES
+					bAddFrags = true;
+#else
 					pPlayer->pev->frags++;
+#endif
 				}
 			}
 
@@ -1876,15 +1883,15 @@ BOOL EXT_FUNC __API_HOOK(HandleMenu_ChooseTeam)(CBasePlayer *pPlayer, int slot)
 
 #ifndef REGAMEDLL_FIXES
 			MESSAGE_BEGIN(MSG_BROADCAST, gmsgScoreInfo);
-#else
-			MESSAGE_BEGIN(MSG_ALL, gmsgScoreInfo);
-#endif
 				WRITE_BYTE(ENTINDEX(pPlayer->edict()));
 				WRITE_SHORT(int(pPlayer->pev->frags));
 				WRITE_SHORT(pPlayer->m_iDeaths);
 				WRITE_SHORT(0);
 				WRITE_SHORT(0);
 			MESSAGE_END();
+#else
+			pPlayer->AddPoints(bAddFrags, TRUE);
+#endif
 
 			pPlayer->m_pIntroCamera = nullptr;
 			pPlayer->m_bTeamChanged = true;

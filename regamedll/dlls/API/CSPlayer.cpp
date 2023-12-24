@@ -112,21 +112,16 @@ EXT_FUNC bool CCSPlayer::JoinTeam(TeamName team)
 	}
 	}
 
+	bool bAddFrags = false;
 	if (pPlayer->pev->deadflag == DEAD_NO)
 	{
 		if (pPlayer->Kill())
 		{
-			pPlayer->pev->frags++;
+			bAddFrags = true;
 		}
 	}
 
-	MESSAGE_BEGIN(MSG_ALL, gmsgScoreInfo);
-		WRITE_BYTE(ENTINDEX(pPlayer->edict()));
-		WRITE_SHORT(int(pPlayer->pev->frags));
-		WRITE_SHORT(pPlayer->m_iDeaths);
-		WRITE_SHORT(0);
-		WRITE_SHORT(0);
-	MESSAGE_END();
+	pPlayer->AddPoints(bAddFrags, TRUE);
 
 	// Switch their actual team...
 	pPlayer->m_bTeamChanged = true;
@@ -225,7 +220,7 @@ EXT_FUNC bool CCSPlayer::RemovePlayerItemEx(const char* pszItemName, bool bRemov
 
 			if (pItem == pPlayer->m_pActiveItem) {
 				((CBasePlayerWeapon *)pItem)->RetireWeapon();
-				
+
 				if (pItem->CanHolster() && pItem != pPlayer->m_pActiveItem && !(pPlayer->pev->weapons &(1 << pItem->m_iId))) {
 					return true;
 				}
