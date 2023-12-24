@@ -30,6 +30,7 @@
 
 #include <API/CSPlayerItem.h>
 #include <API/CSPlayerWeapon.h>
+#include <utlarray.h>
 
 enum WeaponInfiniteAmmoMode
 {
@@ -50,9 +51,23 @@ public:
 		m_bAutoBunnyHopping(false),
 		m_bMegaBunnyJumping(false),
 		m_bPlantC4Anywhere(false),
-		m_iAliveNameChanges(0)
+		m_iAliveNameChanges(0),
+		m_bSpawnProtectionEffects(false),
+		m_flJumpHeight(0),
+		m_flLongJumpHeight(0),
+		m_flLongJumpForce(0),
+		m_flDuckSpeedMultiplier(0),
+		m_iUserID(-1),
+		m_iGibDamageThreshold(GIB_PLAYER_THRESHOLD)
 	{
 		m_szModel[0] = '\0';
+
+		// Resets the kill history for this player
+		for (int i = 0; i < MAX_CLIENTS; i++)
+		{
+			m_iNumKilledByUnanswered[i] = 0;
+			m_bPlayerDominated[i]       = false;
+		}
 	}
 
 	virtual bool IsConnected() const;
@@ -62,8 +77,8 @@ public:
 	virtual CBaseEntity *GiveNamedItemEx(const char *pszName);
 	virtual void GiveDefaultItems();
 	virtual void GiveShield(bool bDeploy = true);
-	virtual void DropShield(bool bDeploy = true);
-	virtual void DropPlayerItem(const char *pszItemName);
+	virtual CBaseEntity *DropShield(bool bDeploy = true);
+	virtual CBaseEntity* DropPlayerItem(const char *pszItemName);
 	virtual bool RemoveShield();
 	virtual void RemoveAllItems(bool bRemoveSuit);
 	virtual bool RemovePlayerItem(const char* pszItemName);
@@ -100,11 +115,19 @@ public:
 	virtual void SetSpawnProtection(float flProtectionTime);
 	virtual void RemoveSpawnProtection();
 	virtual bool HintMessageEx(const char *pMessage, float duration = 6.0f, bool bDisplayIfPlayerDead = false, bool bOverride = false);
+	virtual void Reset();
+	virtual void OnSpawnEquip(bool addDefault = true, bool equipGame = true);
+	virtual void SetScoreboardAttributes(CBasePlayer *destination = nullptr);
 
-	void Reset();
+	bool IsPlayerDominated(int iPlayerIndex) const;
+	void SetPlayerDominated(CBasePlayer *pPlayer, bool bDominated);
+
+	void ResetVars();
+	void ResetAllStats();
 
 	void OnSpawn();
 	void OnKilled();
+	void OnConnect();
 
 	CBasePlayer *BasePlayer() const;
 
@@ -133,6 +156,27 @@ public:
 	bool m_bMegaBunnyJumping;
 	bool m_bPlantC4Anywhere;
 	int m_iAliveNameChanges;
+	bool m_bSpawnProtectionEffects;
+	double m_flJumpHeight;
+	double m_flLongJumpHeight;
+	double m_flLongJumpForce;
+	double m_flDuckSpeedMultiplier;
+
+	int m_iUserID;
+	struct CDamageRecord_t
+	{
+		float flDamage            = 0.0f;
+		float flFlashDurationTime = 0.0f;
+		int userId                = -1;
+	};
+	using DamageList_t = CUtlArray<CDamageRecord_t, MAX_CLIENTS>;
+	DamageList_t m_DamageList; // A unified array of recorded damage that includes giver and taker in each entry
+	DamageList_t &GetDamageList() { return m_DamageList; }
+	void RecordDamage(CBasePlayer *pAttacker, float flDamage, float flFlashDurationTime = -1);
+	int m_iNumKilledByUnanswered[MAX_CLIENTS]; // [0-31] how many unanswered kills this player has been dealt by each other player
+	bool m_bPlayerDominated[MAX_CLIENTS]; // [0-31] array of state per other player whether player is dominating other players
+
+	int m_iGibDamageThreshold; // negative health to reach to gib player
 };
 
 // Inlines
@@ -154,3 +198,37 @@ inline CCSPlayer::EProtectionState CCSPlayer::GetProtectionState() const
 	// has expired
 	return ProtectionSt_Expired;
 }
+
+// Returns whether this player is dominating the specified other player
+inline bool CCSPlayer::IsPlayerDominated(int iPlayerIndex) const
+{
+	if (iPlayerIndex < 0 || iPlayerIndex >= MAX_CLIENTS)
+		return false;
+
+	return m_bPlayerDominated[iPlayerIndex];
+}
+
+// Sets whether this player is dominating the specified other player
+inline void CCSPlayer::SetPlayerDominated(CBasePlayer *pPlayer, bool bDominated)
+{
+	int iPlayerIndex = pPlayer->entindex();
+	Assert(iPlayerIndex > 0 && iPlayerIndex <= MAX_CLIENTS);
+	m_bPlayerDominated[iPlayerIndex - 1] = bDominated;
+}
+
+#ifdef REGAMEDLL_API
+// Determine whether player can be gibbed or not
+inline bool CBasePlayer::ShouldGibPlayer(int iGib)
+{
+	// Always gib the player regardless of incoming damage
+	if (iGib == GIB_ALWAYS)
+		return true;
+
+	// Gib the player if health is below the gib damage threshold
+	if (pev->health < CSPlayer()->m_iGibDamageThreshold && iGib != GIB_NEVER)
+		return true;
+
+	// do not gib the player
+	return false;
+}
+#endif

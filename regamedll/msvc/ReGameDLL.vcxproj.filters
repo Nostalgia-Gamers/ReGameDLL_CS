@@ -540,6 +540,9 @@
     <ClCompile Include="..\dlls\API\CSPlayerItem.cpp">
       <Filter>dlls\API</Filter>
     </ClCompile>
+    <ClCompile Include="..\dlls\API\CSPlayerWeapon.cpp">
+      <Filter>dlls\API</Filter>
+    </ClCompile>
     <ClCompile Include="..\regamedll\public_amalgamation.cpp">
       <Filter>regamedll</Filter>
     </ClCompile>
@@ -551,6 +554,12 @@
     </ClCompile>
     <ClCompile Include="..\public\FileSystem.cpp">
       <Filter>public</Filter>
+    </ClCompile>
+    <ClCompile Include="..\public\tier0\platform_win32.cpp">
+      <Filter>public\tier0</Filter>
+    </ClCompile>
+    <ClCompile Include="..\public\tier0\assert_dialog.cpp">
+      <Filter>public\tier0</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1049,5 +1058,16 @@
     <ClInclude Include="..\dlls\addons\point_command.h">
       <Filter>dlls\addons</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\utlarray.h">
+      <Filter>public</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\tier0\resource.h">
+      <Filter>public\tier0</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\public\tier0\assert_dialog.rc">
+      <Filter>public\tier0</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

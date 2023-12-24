@@ -78,7 +78,7 @@ CCSBotManager::CCSBotManager()
 	char *dataPointer = (char *)LOAD_FILE_FOR_ME((char *)filename, &dataLength);
 	if (!dataPointer)
 	{
-		TheBotProfiles->Init("BotProfile.db");
+		TheBotProfiles->Init(cv_bot_profile_db.string);
 	}
 	else
 	{
@@ -410,11 +410,7 @@ void CCSBotManager::ServerCommand(const char *pcmd)
 			{
 				if (killThemAll || FStrEq(name, msg))
 				{
-#ifdef REGAMEDLL_FIXES
-					ClientKill(pPlayer->edict());
-#else
-					pPlayer->TakeDamage(pPlayer->pev, pPlayer->pev, 9999.9f, DMG_CRUSH);
-#endif
+					pPlayer->Kill();
 				}
 			}
 		}
@@ -634,10 +630,14 @@ void CCSBotManager::ServerCommand(const char *pcmd)
 			{
 				CONSOLE_ECHO("Ambiguous\n");
 			}
-			else
+			else if (found)
 			{
 				CONSOLE_ECHO("Current place set to '%s'\n", found->GetName());
 				SetNavPlace(found->GetID());
+			}
+			else
+			{
+				CONSOLE_ECHO("Error - place name '%s' no exists in phrases BotChatter.db\n", msg);
 			}
 		}
 	}

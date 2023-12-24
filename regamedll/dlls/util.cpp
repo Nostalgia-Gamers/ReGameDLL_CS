@@ -1056,7 +1056,7 @@ void UTIL_BloodStream(const Vector &origin, const Vector &direction, int color, 
 	MESSAGE_END();
 }
 
-void UTIL_BloodDrips(const Vector &origin, const Vector &direction, int color, int amount)
+void UTIL_BloodDrips(const Vector &origin, int color, int amount)
 {
 	if (!UTIL_ShouldShowBlood(color))
 		return;
@@ -1497,6 +1497,10 @@ void UTIL_RestartOther(const char *szClassname)
 	while ((pEntity = UTIL_FindEntityByClassname(pEntity, szClassname)))
 	{
 		pEntity->Restart();
+
+#ifdef REGAMEDLL_ADD
+		FireTargets("game_entity_restart", pEntity, nullptr, USE_TOGGLE, 0.0);
+#endif
 	}
 }
 
@@ -1727,7 +1731,7 @@ bool UTIL_AreHostagesImprov()
 #ifdef REGAMEDLL_ADD
 	if (g_engfuncs.pfnEngCheckParm == nullptr)
 		return false;
-	
+
 	// someday in CS 1.6
 	int improv = ENG_CHECK_PARM("-host-improv", nullptr);
 	if (improv)
@@ -1752,6 +1756,17 @@ int UTIL_GetNumPlayers()
 	}
 
 	return nNumPlayers;
+}
+
+int UTIL_CountEntities(const char *szName)
+{
+	int count = 0;
+	CBaseEntity *pEnt = nullptr;
+
+	while ((pEnt = UTIL_FindEntityByClassname(pEnt, szName)))
+		count++;
+
+	return count;
 }
 
 bool UTIL_IsSpawnPointOccupied(CBaseEntity *pSpot)
@@ -1804,10 +1819,11 @@ void NORETURN Sys_Error(const char *error, ...)
 
 	CONSOLE_ECHO("FATAL ERROR (shutting down): %s\n", text);
 
-	//TerminateProcess(GetCurrentProcess(), 1);
-	int *null = 0;
-	*null = 0;
-	exit(-1);
+#if defined(_WIN32)
+	MessageBoxA(NULL, text, "Fatal error", MB_ICONERROR | MB_OK);
+#endif
+
+	exit(EXIT_FAILURE);
 }
 
 int UTIL_CountPlayersInBrushVolume(bool bOnlyAlive, CBaseEntity *pBrushEntity, int &playersInCount, int &playersOutCount, CPlayerInVolumeAdapter *pAdapter)

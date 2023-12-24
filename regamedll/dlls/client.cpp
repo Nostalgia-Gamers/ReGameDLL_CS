@@ -375,29 +375,13 @@ void EXT_FUNC ClientKill(edict_t *pEntity)
 	entvars_t *pev = &pEntity->v;
 	CBasePlayer *pPlayer = CBasePlayer::Instance(pev);
 
-	if (pPlayer->GetObserverMode() != OBS_NONE)
-		return;
-
-	if (pPlayer->m_iJoiningState != JOINED)
-		return;
-
 	// prevent suiciding too often
 	if (pPlayer->m_fNextSuicideTime > gpGlobals->time)
 		return;
 
-	pPlayer->m_LastHitGroup = HITGROUP_GENERIC;
-
 	// don't let them suicide for 1 second after suiciding
 	pPlayer->m_fNextSuicideTime = gpGlobals->time + 1.0f;
-
-	// have the player kill themself
-	pEntity->v.health = 0;
-	pPlayer->Killed(pev, GIB_NEVER);
-
-	if (CSGameRules()->m_pVIP == pPlayer)
-	{
-		CSGameRules()->m_iConsecutiveVIP = 10;
-	}
+	pPlayer->Kill();
 }
 
 LINK_HOOK_VOID_CHAIN(ShowMenu, (CBasePlayer *pPlayer, int bitsValidSlots, int nDisplayTime, BOOL fNeedMore, char *pszText), pPlayer, bitsValidSlots, nDisplayTime, fNeedMore, pszText)
@@ -637,6 +621,9 @@ void EXT_FUNC ClientPutInServer(edict_t *pEntity)
 		return;
 	}
 
+#ifdef REGAMEDLL_FIXES
+	pPlayer->m_bHasDefuser = false;
+#endif
 	pPlayer->m_bNotKilled = true;
 	pPlayer->m_iIgnoreGlobalChat = IGNOREMSG_NONE;
 	pPlayer->m_iTeamKills = 0;
@@ -686,10 +673,12 @@ void EXT_FUNC ClientPutInServer(edict_t *pEntity)
 	CBaseEntity *pTarget = nullptr;
 	pPlayer->m_pIntroCamera = UTIL_FindEntityByClassname(nullptr, "trigger_camera");
 
+#ifndef REGAMEDLL_FIXES
 	if (g_pGameRules && g_pGameRules->IsMultiplayer())
 	{
 		CSGameRules()->m_bMapHasCameras = (pPlayer->m_pIntroCamera != nullptr);
 	}
+#endif
 
 	if (pPlayer->m_pIntroCamera)
 	{
@@ -707,7 +696,12 @@ void EXT_FUNC ClientPutInServer(edict_t *pEntity)
 		pPlayer->pev->angles = CamAngles;
 		pPlayer->pev->v_angle = pPlayer->pev->angles;
 
-		pPlayer->m_fIntroCamTime = gpGlobals->time + 6;
+		pPlayer->m_fIntroCamTime =
+#ifdef REGAMEDLL_FIXES
+			(CSGameRules()->m_bMapHasCameras <= 1) ? 0.0 : // no need to refresh cameras if map has only one
+#endif
+			gpGlobals->time + 6;
+
 		pPlayer->pev->view_ofs = g_vecZero;
 	}
 #ifndef REGAMEDLL_FIXES
@@ -743,7 +737,7 @@ void EXT_FUNC ClientPutInServer(edict_t *pEntity)
 	}
 
 #ifdef REGAMEDLL_API
-	pPlayer->CSPlayer()->Reset();
+	pPlayer->CSPlayer()->OnConnect();
 #endif
 
 	UTIL_ClientPrintAll(HUD_PRINTNOTIFY, "#Game_connected", (sName[0] != '\0') ? sName : "<unconnected>");
@@ -1210,7 +1204,9 @@ void BuyMachineGun(CBasePlayer *pPlayer, int iSlot)
 	BuyWeaponByWeaponID(pPlayer, WEAPON_M249);
 }
 
-void BuyItem(CBasePlayer *pPlayer, int iSlot)
+LINK_HOOK_VOID_CHAIN(BuyItem, (CBasePlayer *pPlayer, int iSlot), pPlayer, iSlot)
+
+void EXT_FUNC __API_HOOK(BuyItem)(CBasePlayer *pPlayer, int iSlot)
 {
 	int iItemPrice = 0;
 	const char *pszItem = nullptr;
@@ -1451,28 +1447,13 @@ void BuyItem(CBasePlayer *pPlayer, int iSlot)
 			if (pPlayer->m_iAccount >= DEFUSEKIT_PRICE)
 			{
 				bEnoughMoney = true;
-				pPlayer->m_bHasDefuser = true;
-
-				MESSAGE_BEGIN(MSG_ONE, gmsgStatusIcon, nullptr, pPlayer->pev);
-					WRITE_BYTE(STATUSICON_SHOW);
-					WRITE_STRING("defuser");
-					WRITE_BYTE(0);
-					WRITE_BYTE(160);
-					WRITE_BYTE(0);
-				MESSAGE_END();
-
-				pPlayer->pev->body = 1;
+				pPlayer->GiveDefuser();
 				pPlayer->AddAccount(-DEFUSEKIT_PRICE, RT_PLAYER_BOUGHT_SOMETHING);
 
 #ifdef REGAMEDLL_FIXES
 				EMIT_SOUND(ENT(pPlayer->pev), CHAN_VOICE, "items/kevlar.wav", VOL_NORM, ATTN_NORM);
 #else
 				EMIT_SOUND(ENT(pPlayer->pev), CHAN_ITEM, "items/kevlar.wav", VOL_NORM, ATTN_NORM);
-#endif
-				pPlayer->SendItemStatus();
-
-#ifdef BUILD_LATEST
-				pPlayer->SetScoreboardAttributes();
 #endif
 			}
 			break;
@@ -1490,7 +1471,6 @@ void BuyItem(CBasePlayer *pPlayer, int iSlot)
 			if (pPlayer->m_iAccount >= SHIELDGUN_PRICE)
 			{
 				bEnoughMoney = true;
-
 				pPlayer->DropPrimary();
 				pPlayer->GiveShield();
 				pPlayer->AddAccount(-SHIELDGUN_PRICE, RT_PLAYER_BOUGHT_SOMETHING);
@@ -1774,6 +1754,9 @@ BOOL EXT_FUNC __API_HOOK(HandleMenu_ChooseTeam)(CBasePlayer *pPlayer, int slot)
 	}
 
 	TeamName team = UNASSIGNED;
+#ifdef REGAMEDLL_FIXES
+	bool bAddFrags = false;
+#endif
 
 	switch (slot)
 	{
@@ -1856,10 +1839,15 @@ BOOL EXT_FUNC __API_HOOK(HandleMenu_ChooseTeam)(CBasePlayer *pPlayer, int slot)
 		{
 			if (pPlayer->m_iTeam != UNASSIGNED && pPlayer->pev->deadflag == DEAD_NO)
 			{
-				ClientKill(pPlayer->edict());
-
-				// add 1 to frags to balance out the 1 subtracted for killing yourself
-				pPlayer->pev->frags++;
+				if (pPlayer->Kill())
+				{
+					// add 1 to frags to balance out the 1 subtracted for killing yourself
+#ifdef REGAMEDLL_FIXES
+					bAddFrags = true;
+#else
+					pPlayer->pev->frags++;
+#endif
+				}
 			}
 
 			pPlayer->RemoveAllItems(TRUE);
@@ -1895,15 +1883,15 @@ BOOL EXT_FUNC __API_HOOK(HandleMenu_ChooseTeam)(CBasePlayer *pPlayer, int slot)
 
 #ifndef REGAMEDLL_FIXES
 			MESSAGE_BEGIN(MSG_BROADCAST, gmsgScoreInfo);
-#else
-			MESSAGE_BEGIN(MSG_ALL, gmsgScoreInfo);
-#endif
 				WRITE_BYTE(ENTINDEX(pPlayer->edict()));
 				WRITE_SHORT(int(pPlayer->pev->frags));
 				WRITE_SHORT(pPlayer->m_iDeaths);
 				WRITE_SHORT(0);
 				WRITE_SHORT(0);
 			MESSAGE_END();
+#else
+			pPlayer->AddPoints(bAddFrags, TRUE);
+#endif
 
 			pPlayer->m_pIntroCamera = nullptr;
 			pPlayer->m_bTeamChanged = true;
@@ -1926,7 +1914,7 @@ BOOL EXT_FUNC __API_HOOK(HandleMenu_ChooseTeam)(CBasePlayer *pPlayer, int slot)
 			MESSAGE_END();
 #endif
 			// do we have fadetoblack on? (need to fade their screen back in)
-			if (fadetoblack.value)
+			if (fadetoblack.value == FADETOBLACK_STAY)
 			{
 				UTIL_ScreenFade(pPlayer, Vector(0, 0, 0), 0.001, 0, 0, FFADE_IN);
 			}
@@ -2087,10 +2075,10 @@ BOOL EXT_FUNC __API_HOOK(HandleMenu_ChooseTeam)(CBasePlayer *pPlayer, int slot)
 		pPlayer->m_iMenu = Menu_ChooseAppearance;
 
 		// Show the appropriate Choose Appearance menu
-		// This must come before ClientKill() for CheckWinConditions() to function properly
+		// This must come before pPlayer->Kill() for CheckWinConditions() to function properly
 		if (pPlayer->pev->deadflag == DEAD_NO)
 		{
-			ClientKill(pPlayer->edict());
+			pPlayer->Kill();
 		}
 	}
 
@@ -2277,7 +2265,7 @@ bool EXT_FUNC __API_HOOK(BuyGunAmmo)(CBasePlayer *pPlayer, CBasePlayerItem *weap
 	if (pPlayer->m_iAccount >= info->clipCost)
 	{
 #ifdef REGAMEDLL_FIXES
-		if (pPlayer->GiveAmmo(info->buyClipSize, info->ammoName2, weapon->iMaxAmmo1()) == -1)
+		if (pPlayer->GiveAmmo(info->buyClipSize, weapon->pszAmmo1(), weapon->iMaxAmmo1()) == -1)
 			return false;
 
 		EMIT_SOUND(ENT(weapon->pev), CHAN_ITEM, "items/9mmclip1.wav", VOL_NORM, ATTN_NORM);
@@ -4840,6 +4828,16 @@ int EXT_FUNC GetWeaponData(edict_t *pEdict, struct weapon_data_s *info)
 					item->fuser2 = weapon->m_flStartThrow;
 					item->fuser3 = weapon->m_flReleaseThrow;
 					item->iuser1 = weapon->m_iSwing;
+
+#ifdef REGAMEDLL_FIXES
+					if (pPlayerItem == pPlayer->m_pActiveItem && !weapon->m_fInReload && weapon->m_iClip == II.iMaxClip)
+					{
+						const WeaponInfoStruct *wpnInfo = GetDefaultWeaponInfo(II.iId);
+
+						if (wpnInfo && wpnInfo->gunClipSize != II.iMaxClip)
+							item->m_iClip = wpnInfo->gunClipSize;
+					}
+#endif
 				}
 			}
 
@@ -4872,7 +4870,12 @@ void EXT_FUNC UpdateClientData(const edict_t *ent, int sendweapons, struct clien
 	}
 
 	cd->flags = pev->flags;
+#ifdef REGAMEDLL_FIXES
+	cd->health = max(pev->health, 0.0f);
+#else
 	cd->health = pev->health;
+#endif
+
 	cd->viewmodel = MODEL_INDEX(STRING(pev->viewmodel));
 	cd->waterlevel = pev->waterlevel;
 	cd->watertype = pev->watertype;

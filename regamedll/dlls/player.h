@@ -444,6 +444,10 @@ public:
 	void Pain_OrigFunc(int iLastHitGroup, bool bHasArmour);
 	void DeathSound_OrigFunc();
 	void JoiningThink_OrigFunc();
+	void CheckTimeBasedDamage_OrigFunc();
+	edict_t *EntSelectSpawnPoint_OrigFunc();
+	void PlayerDeathThink_OrigFunc();
+	void Observer_Think_OrigFunc();
 
 	CCSPlayer *CSPlayer() const;
 #endif // REGAMEDLL_API
@@ -453,6 +457,7 @@ public:
 	static CBasePlayer *Instance(entvars_t *pev) { return Instance(ENT(pev)); }
 	static CBasePlayer *Instance(int offset) { return Instance(ENT(offset)); }
 
+	float GetDyingAnimationDuration() const;
 	void SpawnClientSideCorpse();
 	void Observer_FindNextPlayer(bool bReverse, const char *name = nullptr);
 	CBasePlayer *Observer_IsValidTarget(int iPlayerIndex, bool bSameTeam);
@@ -585,6 +590,7 @@ public:
 	bool IsReloading() const;
 	bool HasTimePassedSinceDeath(float duration) const;
 	bool IsBlind() const { return (m_blindUntilTime > gpGlobals->time); }
+	bool IsFullyBlind(const float flPeekTime = 0.6f) const { return m_blindAlpha >= 255 && m_blindFadeTime > (flPeekTime * 2.0f) && (m_blindStartTime + m_blindHoldTime + flPeekTime) > gpGlobals->time; }
 	bool IsAutoFollowAllowed() const { return (gpGlobals->time > m_allowAutoFollowTime); }
 	void InhibitAutoFollow(float duration) { m_allowAutoFollowTime = gpGlobals->time + duration; }
 	void AllowAutoFollow() { m_allowAutoFollowTime = 0; }
@@ -628,12 +634,15 @@ public:
 	void DropPrimary();
 	void OnSpawnEquip(bool addDefault = true, bool equipGame = true);
 	void RemoveBomb();
+	void GiveDefuser();
 	void RemoveDefuser();
 	void HideTimer();
 	bool MakeBomber();
 	bool GetIntoGame();
 	bool ShouldToShowAccount(CBasePlayer *pReceiver) const;
 	bool ShouldToShowHealthInfo(CBasePlayer *pReceiver) const;
+	const char *GetKillerWeaponName(entvars_t *pevInflictor, entvars_t *pevKiller) const;
+	bool ShouldGibPlayer(int iGib);
 
 	CBasePlayerItem *GetItemByName(const char *itemName);
 	CBasePlayerItem *GetItemById(WeaponIdType weaponID);
@@ -642,6 +651,7 @@ public:
 	void RemoveSpawnProtection();
 	void UseEmpty();
 	void DropIdlePlayer(const char *reason);
+	bool Kill();
 
 	// templates
 	template<typename T = CBasePlayerItem, typename Functor>
@@ -906,6 +916,7 @@ public:
 
 CWeaponBox *CreateWeaponBox(CBasePlayerItem *pItem, CBasePlayer *pPlayerOwner, const char *modelName, Vector &origin, Vector &angles, Vector &velocity, float lifeTime, bool packAmmo);
 CWeaponBox *CreateWeaponBox_OrigFunc(CBasePlayerItem *pItem, CBasePlayer *pPlayerOwner, const char *modelName, Vector &origin, Vector &angles, Vector &velocity, float lifeTime, bool packAmmo);
+CItemThighPack *SpawnDefuser(const Vector &vecOrigin, edict_t *pentOwner);
 
 class CWShield: public CBaseEntity
 {
@@ -945,7 +956,24 @@ inline bool CBasePlayer::HasTimePassedSinceDeath(float duration) const
 inline CCSPlayer *CBasePlayer::CSPlayer() const {
 	return reinterpret_cast<CCSPlayer *>(this->m_pEntity);
 }
-#endif
+#else // !REGAMEDLL_API
+
+// Determine whether player can be gibbed or not
+inline bool CBasePlayer::ShouldGibPlayer(int iGib)
+{
+	// Always gib the player regardless of incoming damage
+	if (iGib == GIB_ALWAYS)
+		return true;
+
+	// Gib the player if health is below the gib damage threshold
+	if (pev->health < GIB_PLAYER_THRESHOLD && iGib != GIB_NEVER)
+		return true;
+
+	// do not gib the player
+	return false;
+}
+
+#endif // !REGAMEDLL_API
 
 #ifdef REGAMEDLL_FIXES
 
@@ -967,7 +995,6 @@ inline CBasePlayer *UTIL_PlayerByIndexSafe(int playerIndex)
 	return pPlayer;
 }
 
-extern entvars_t *g_pevLastInflictor;
 extern CBaseEntity *g_pLastSpawn;
 extern CBaseEntity *g_pLastCTSpawn;
 extern CBaseEntity *g_pLastTerroristSpawn;
@@ -995,7 +1022,6 @@ void SendItemStatus(CBasePlayer *pPlayer);
 const char *GetCSModelName(int item_id);
 Vector VecVelocityForDamage(float flDamage);
 int TrainSpeed(int iSpeed, int iMax);
-const char *GetWeaponName(entvars_t *pevInflictor, entvars_t *pKiller);
 void LogAttack(CBasePlayer *pAttacker, CBasePlayer *pVictim, int teamAttack, int healthHit, int armorHit, int newHealth, int newArmor, const char *killer_weapon_name);
 bool CanSeeUseable(CBasePlayer *me, CBaseEntity *pEntity);
 void FixPlayerCrouchStuck(edict_t *pPlayer);

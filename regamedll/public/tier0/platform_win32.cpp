@@ -28,17 +28,30 @@
 
 #include "precompiled.h"
 
-void CCSEntity::FireBullets(int iShots, Vector &vecSrc, Vector &vecDirShooting, Vector &vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage, entvars_t *pevAttacker)
+bool Plat_IsInDebugSession()
 {
-	BaseEntity()->FireBullets(iShots, vecSrc, vecDirShooting, vecSpread, flDistance, iBulletType, iTracerFreq, iDamage, pevAttacker);
+	return IsDebuggerPresent() != FALSE;
 }
 
-void CCSEntity::FireBuckshots(ULONG cShots, Vector &vecSrc, Vector &vecDirShooting, Vector &vecSpread, float flDistance, int iTracerFreq, int iDamage, entvars_t *pevAttacker)
+void Plat_OutputDebugStringRaw(const char *psz)
 {
-	BaseEntity()->FireBuckshots(cShots, vecSrc, vecDirShooting, vecSpread, flDistance, iTracerFreq, iDamage, pevAttacker);
+	OutputDebugString(psz);
 }
 
-Vector CCSEntity::FireBullets3(Vector &vecSrc, Vector &vecDirShooting, float vecSpread, float flDistance, int iPenetration, int iBulletType, int iDamage, float flRangeModifier, entvars_t *pevAttacker, bool bPistol, int shared_rand)
+void Plat_OutputDebugString(const char *psz)
 {
-	return BaseEntity()->FireBullets3(vecSrc, vecDirShooting, vecSpread, flDistance, iPenetration, iBulletType, iDamage, flRangeModifier, pevAttacker, bPistol, shared_rand);
+	static char buf[4096];
+	int len = Q_snprintf(buf, sizeof(buf), "%s", psz);
+	Assert(len > 0);
+	OutputDebugString(buf);
+}
+
+void Plat_DebugString(const char *psz)
+{
+	Plat_OutputDebugString(psz);
+}
+
+const char *Plat_GetCommandLine()
+{
+	return GetCommandLineA();
 }

@@ -161,6 +161,9 @@ set(SHARED_SRCS
 	"public/FileSystem.cpp"
 	"public/interface.cpp"
 	"public/MemPool.cpp"
+	"public/MemPool.cpp"
+	"public/tier0/dbg.cpp"
+	"public/tier0/platform_posix.cpp"
 )
 
 set(GAMEDLL_SRCS
@@ -226,6 +229,7 @@ set(GAMEDLL_SRCS
 	"dlls/API/CSEntity.cpp"
 	"dlls/API/CSPlayer.cpp"
 	"dlls/API/CSPlayerItem.cpp"
+	"dlls/API/CSPlayerWeapon.cpp"
 	"dlls/addons/item_airbox.cpp"
 	"dlls/addons/point_command.cpp"
 	"dlls/addons/trigger_random.cpp"
