@@ -1223,10 +1223,9 @@ void CBasePlayerItem::AttachToPlayer(CBasePlayer *pPlayer)
 void CBasePlayerWeapon::Spawn()
 {
 #ifdef REGAMEDLL_API
-	ItemInfo info;
-	Q_memset(&info, 0, sizeof(info));
+	ItemInfo &info = m_ItemInfoArray[m_iId];
 
-	if (GetItemInfo(&info)) {
+	if (info.iId) {
 		CSPlayerItem()->SetItemInfo(&info);
 	}
 #endif
