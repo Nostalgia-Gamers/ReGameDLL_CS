@@ -190,7 +190,7 @@ NOXREF void EjectBrass2(const Vector &vecOrigin, const Vector &vecVelocity, floa
 	MESSAGE_END();
 }
 
-#ifdef REGAMEDLL_ADD
+/*#ifdef REGAMEDLL_ADD
 struct {
 	AmmoType type;
 	const char *name;
@@ -211,7 +211,7 @@ struct {
 	{ AMMO_SMOKEGRENADE, "SmokeGrenade" },
 	{ AMMO_C4,           "C4" },
 };
-#endif
+#endif*/
 #ifdef REGAMEDLL_API
 BOOL EXT_FUNC RemoveAmmoNameFromAmmoRegistry(const char *szAmmoname)
 {
