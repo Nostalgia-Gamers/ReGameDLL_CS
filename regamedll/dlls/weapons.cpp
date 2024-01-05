@@ -222,7 +222,9 @@ BOOL EXT_FUNC RemoveAmmoNameFromAmmoRegistry(const char *szAmmoname)
 
 	for (int i = 1; i < MAX_AMMO_SLOTS; i++)
 	{
-		if (!Q_stricmp(CBasePlayerItem::m_AmmoInfoArray[i].pszName, szAmmoname))
+		AmmoInfo& ammoinfo = CBasePlayerItem::m_AmmoInfoArray[i];
+
+		if (ammoinfo.iId && !Q_stricmp(ammoinfo.pszName, szAmmoname))
 		{
 			Q_memset(&CBasePlayerItem::m_AmmoInfoArray[i], 0, sizeof(CBasePlayerItem::m_AmmoInfoArray[i]));
 			return TRUE;
