@@ -212,6 +212,26 @@ struct {
 	{ AMMO_C4,           "C4" },
 };
 #endif
+#ifdef REGAMEDLL_API
+BOOL EXT_FUNC RemoveAmmoNameFromAmmoRegistry(const char *szAmmoname)
+{
+	if (!szAmmoname || !szAmmoname[0])
+	{
+		return FALSE;
+	}
+
+	for (int i = 1; i < MAX_AMMO_SLOTS; i++)
+	{
+		if (!Q_stricmp(CBasePlayerItem::m_AmmoInfoArray[i].pszName, szAmmoname))
+		{
+			Q_memset(&CBasePlayerItem::m_AmmoInfoArray[i], 0, sizeof(CBasePlayerItem::m_AmmoInfoArray[i]));
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+#endif
 
 // Precaches the ammo and queues the ammo info for sending to clients
 int AddAmmoNameToAmmoRegistry(const char *szAmmoname)
@@ -222,6 +242,27 @@ int AddAmmoNameToAmmoRegistry(const char *szAmmoname)
 		return -1;
 	}
 
+#ifdef REGAMEDLL_ADD
+	int newIndex = -1;
+	for (int i = 1; i < MAX_AMMO_SLOTS; i++)
+	{
+		if (!Q_stricmp(CBasePlayerItem::m_AmmoInfoArray[i].pszName, szAmmoname))
+		{
+			return i;
+		}
+
+		// New slot for the ammo it's the first one clear.
+		if (newIndex == -1)
+		{
+			newIndex = i;
+		}
+	}
+
+	CBasePlayerItem::m_AmmoInfoArray[newIndex].pszName = szAmmoname;
+	CBasePlayerItem::m_AmmoInfoArray[newIndex].iId = newIndex;
+
+	return newIndex;
+#else
 	// make sure it's not already in the registry
 	for (int i = 1; i < MAX_AMMO_SLOTS; i++)
 	{
@@ -241,7 +282,6 @@ int AddAmmoNameToAmmoRegistry(const char *szAmmoname)
 	if (giAmmoIndex >= MAX_AMMO_SLOTS)
 		giAmmoIndex = 1;
 
-#ifdef REGAMEDLL_ADD
 	for (auto& ammo : ammoIndex)
 	{
 		if (Q_stricmp(ammo.name, szAmmoname))
@@ -252,7 +292,6 @@ int AddAmmoNameToAmmoRegistry(const char *szAmmoname)
 		}
 		break;
 	}
-#endif
 
 	CBasePlayerItem::m_AmmoInfoArray[giAmmoIndex].pszName = szAmmoname;
 
@@ -260,6 +299,7 @@ int AddAmmoNameToAmmoRegistry(const char *szAmmoname)
 	CBasePlayerItem::m_AmmoInfoArray[giAmmoIndex].iId = giAmmoIndex;
 
 	return giAmmoIndex;
+#endif
 }
 
 // Precaches the weapon and queues the weapon info for sending to clients
