@@ -190,7 +190,7 @@ NOXREF void EjectBrass2(const Vector &vecOrigin, const Vector &vecVelocity, floa
 	MESSAGE_END();
 }
 
-/*#ifdef REGAMEDLL_ADD
+#ifdef REGAMEDLL_ADD
 struct {
 	AmmoType type;
 	const char *name;
@@ -211,7 +211,7 @@ struct {
 	{ AMMO_SMOKEGRENADE, "SmokeGrenade" },
 	{ AMMO_C4,           "C4" },
 };
-#endif*/
+#endif
 #ifdef REGAMEDLL_API
 BOOL EXT_FUNC RemoveAmmoNameFromAmmoRegistry(const char *szAmmoname)
 {
@@ -251,6 +251,7 @@ int AddAmmoNameToAmmoRegistry(const char *szAmmoname)
 			return i;
 		}
 
+		// New slot for the ammo it's the first one clear.
 		if (!CBasePlayerItem::m_AmmoInfoArray[i].iId && newIndex == -1)
 		{
 			newIndex = i;
@@ -284,6 +285,7 @@ int AddAmmoNameToAmmoRegistry(const char *szAmmoname)
 	if (giAmmoIndex >= MAX_AMMO_SLOTS)
 		giAmmoIndex = 1;
 
+#ifdef REGAMEDLL_ADD
 	for (auto& ammo : ammoIndex)
 	{
 		if (Q_stricmp(ammo.name, szAmmoname))
@@ -294,6 +296,7 @@ int AddAmmoNameToAmmoRegistry(const char *szAmmoname)
 		}
 		break;
 	}
+#endif
 
 	CBasePlayerItem::m_AmmoInfoArray[giAmmoIndex].pszName = szAmmoname;
 
