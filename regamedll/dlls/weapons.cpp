@@ -246,15 +246,16 @@ int AddAmmoNameToAmmoRegistry(const char *szAmmoname)
 	int newIndex = -1;
 	for (int i = 1; i < MAX_AMMO_SLOTS; i++)
 	{
-		if (!Q_stricmp(CBasePlayerItem::m_AmmoInfoArray[i].pszName, szAmmoname))
+		AmmoInfo& ammoinfo = CBasePlayerItem::m_AmmoInfoArray[i];
+
+		if (ammoinfo.iId && !Q_stricmp(ammoinfo.pszName, szAmmoname))
 		{
 			return i;
 		}
 
 		// New slot for the ammo it's the first one clear.
-		if (!CBasePlayerItem::m_AmmoInfoArray[i].iId && newIndex == -1)
+		if (!ammoinfo.iId && newIndex == -1)
 		{
-			CONSOLE_ECHO("Añadiendo ammo al indice %d", i);
 			newIndex = i;
 		}
 	}
