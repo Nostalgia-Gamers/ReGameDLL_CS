@@ -244,22 +244,24 @@ int AddAmmoNameToAmmoRegistry(const char *szAmmoname)
 
 #ifdef REGAMEDLL_ADD
 	int newIndex = -1;
-	for (int i = 1; i < MAX_AMMO_SLOTS; i++)
+	for (int i = 0; i < MAX_AMMO_SLOTS; i++)
 	{
 		if (!Q_stricmp(CBasePlayerItem::m_AmmoInfoArray[i].pszName, szAmmoname))
 		{
 			return i;
 		}
 
-		// New slot for the ammo it's the first one clear.
-		if (newIndex == -1)
+		if (!CBasePlayerItem::m_AmmoInfoArray[i].iId && newIndex == -1)
 		{
 			newIndex = i;
 		}
 	}
 
-	CBasePlayerItem::m_AmmoInfoArray[newIndex].pszName = szAmmoname;
-	CBasePlayerItem::m_AmmoInfoArray[newIndex].iId = newIndex;
+	if (newIndex != -1)
+	{
+		CBasePlayerItem::m_AmmoInfoArray[newIndex].pszName = szAmmoname;
+		CBasePlayerItem::m_AmmoInfoArray[newIndex].iId = newIndex;
+	}
 
 	return newIndex;
 #else
