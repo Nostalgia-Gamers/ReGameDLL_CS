@@ -816,9 +816,15 @@ void CBasePlayerWeapon::FireRemaining(int &shotsFired, float &shootTime, BOOL bI
 	flag = 0;
 #endif
 
+#ifdef REGAMEDLL_API
+	float flBaseDamage = CSPlayerWeapon()->m_flBaseDamage;
+#else
+	float flBaseDamage = bIsGlock ? GLOCK18_DAMAGE : FAMAS_DAMAGE;
+#endif
+
 	if (bIsGlock)
 	{
-		vecDir = m_pPlayer->FireBullets3(vecSrc, gpGlobals->v_forward, 0.05, 8192, 1, BULLET_PLAYER_9MM, 18, 0.9, m_pPlayer->pev, true, m_pPlayer->random_seed);
+		vecDir = m_pPlayer->FireBullets3(vecSrc, gpGlobals->v_forward, 0.05, 8192, 1, BULLET_PLAYER_9MM, flBaseDamage, 0.9, m_pPlayer->pev, true, m_pPlayer->random_seed);
 #ifndef REGAMEDLL_FIXES
 		--m_pPlayer->ammo_9mm;
 #endif
@@ -827,8 +833,7 @@ void CBasePlayerWeapon::FireRemaining(int &shotsFired, float &shootTime, BOOL bI
 	}
 	else
 	{
-
-		vecDir = m_pPlayer->FireBullets3(vecSrc, gpGlobals->v_forward, m_fBurstSpread, 8192, 2, BULLET_PLAYER_556MM, 30, 0.96, m_pPlayer->pev, false, m_pPlayer->random_seed);
+		vecDir = m_pPlayer->FireBullets3(vecSrc, gpGlobals->v_forward, m_fBurstSpread, 8192, 2, BULLET_PLAYER_556MM, flBaseDamage, 0.96, m_pPlayer->pev, false, m_pPlayer->random_seed);
 #ifndef REGAMEDLL_FIXES
 		--m_pPlayer->ammo_556nato;
 #endif
@@ -1302,8 +1307,18 @@ int CBasePlayerWeapon::AddToPlayer(CBasePlayer *pPlayer)
 	if (!m_iPrimaryAmmoType)
 	{
 		m_iPrimaryAmmoType = pPlayer->GetAmmoIndex(pszAmmo1());
+#ifndef REGAMEDLL_FIXES
+		m_iSecondaryAmmoType = pPlayer->GetAmmoIndex(pszAmmo2());
+#endif
+	}
+
+#ifdef REGAMEDLL_FIXES
+	// (3rd party support) if someone updates (or screws) the secondary ammo type later
+	if (!m_iSecondaryAmmoType)
+	{
 		m_iSecondaryAmmoType = pPlayer->GetAmmoIndex(pszAmmo2());
 	}
+#endif
 
 	if (AddWeapon())
 	{
@@ -1630,7 +1645,11 @@ int CBasePlayerWeapon::PrimaryAmmoIndex()
 
 int CBasePlayerWeapon::SecondaryAmmoIndex()
 {
+#ifdef REGAMEDLL_ADD
+	return m_iSecondaryAmmoType;
+#else
 	return -1;
+#endif
 }
 
 void CBasePlayerWeapon::Holster(int skiplocal)
@@ -1660,7 +1679,7 @@ int CBasePlayerWeapon::ExtractAmmo(CBasePlayerWeapon *pWeapon)
 
 	if (pszAmmo2())
 	{
-		res = AddSecondaryAmmo(0, (char *)pszAmmo2(), iMaxAmmo2());
+		res = pWeapon->AddSecondaryAmmo(0, (char *)pszAmmo2(), iMaxAmmo2());
 	}
 
 	return res;
@@ -1875,6 +1894,91 @@ void CWeaponBox::Kill()
 	UTIL_Remove(this);
 }
 
+bool CWeaponBox::GiveAmmoToPlayer(CBasePlayer *pPlayer, CBasePlayerWeapon *pWeapon, int iCurrentAmmo, const char *pszAmmo, int iMaxAmmo, CBasePlayerItem **pGivenItem)
+{
+	if (iCurrentAmmo >= iMaxAmmo)
+		return false; // can't pickup more, these ammo are full in backpack
+
+	// If already have a weapon in backpack, just refill ammo for it
+	int iAmmoIndex = GetAmmoIndex(pszAmmo);
+	if (iAmmoIndex > 0)
+	{
+		// How many weapon ammo can pick up?
+		int iAmmoPickup = min(m_rgAmmo[iAmmoIndex], iMaxAmmo - iCurrentAmmo);
+		if (iAmmoPickup > 0)
+		{
+			if (iCurrentAmmo == 0 && !(pPlayer->pev->weapons & (1<<pWeapon->m_iId)) && (pWeapon->iFlags() & ITEM_FLAG_EXHAUSTIBLE))
+			{
+				if (m_rgAmmo[iAmmoIndex] > iMaxAmmo)
+				{
+					// If ammo capacity of the dropped weapon exceeds the player's backpack capacity,
+					// make a copy of dropped weapon and give it to the player
+					CBasePlayerItem *copyItem = (CBasePlayerItem *)pPlayer->GiveCopyItem(pWeapon);
+					if (copyItem)
+					{
+						// The cloned weapon must inherit properties from a dropped weapon, such as Item Info
+#ifdef REGAMEDLL_API
+						ItemInfo info;
+						if (pWeapon->CSPlayerItem()->GetItemInfo(&info))
+							copyItem->CSPlayerItem()->SetItemInfo(&info);
+#endif
+						m_rgAmmo[iAmmoIndex]--;
+						iAmmoPickup--;
+					}
+				}
+				else
+				{
+					// If no weapon in backpack, then issue weapon
+					if (pPlayer->AddPlayerItem(pWeapon))
+					{
+						pWeapon->AttachToPlayer(pPlayer);
+						if (pGivenItem) *pGivenItem = pWeapon;
+					}
+
+					// unlink this weapon from the box
+					return true;
+				}
+			}
+
+			Assert(iAmmoPickup != 0);
+			Assert(m_rgAmmo[iAmmoIndex] != 0);
+
+			if (!FStringNull(m_rgiszAmmo[iAmmoIndex]) &&
+				pPlayer->GiveAmmo(iAmmoPickup, STRING(m_rgiszAmmo[iAmmoIndex]), iMaxAmmo) != -1)
+			{
+				m_rgAmmo[iAmmoIndex] -= iAmmoPickup;
+
+				if (m_rgAmmo[iAmmoIndex] < 0)
+					m_rgAmmo[iAmmoIndex] = 0;
+
+				EMIT_SOUND(pPlayer->edict(), CHAN_ITEM, "items/9mmclip1.wav", VOL_NORM, ATTN_NORM);
+			}
+		}
+
+		// ammo exhausted, remove this weapon
+		if (m_rgAmmo[iAmmoIndex] <= 0)
+		{
+			pWeapon->Kill();
+
+			// unlink this weapon from the box
+			return true;
+		}
+
+		// ammo has not been exhausted yet, keep this weapon in weaponbox
+		return false;
+	}
+
+	// If no weapon in backpack, then issue weapon
+	if (pPlayer->AddPlayerItem(pWeapon))
+	{
+		pWeapon->AttachToPlayer(pPlayer);
+		if (pGivenItem) *pGivenItem = pWeapon;
+	}
+
+	// unlink this weapon from the box
+	return true;
+}
+
 // Try to add my contents to the toucher if the toucher is a player.
 void CWeaponBox::Touch(CBaseEntity *pOther)
 {
@@ -2020,38 +2124,28 @@ void CWeaponBox::Touch(CBaseEntity *pOther)
 					int playerGrenades = pPlayer->m_rgAmmo[pGrenade->m_iPrimaryAmmoType];
 
 #ifdef REGAMEDLL_FIXES
-					// sorry for hardcode :(
-					const int boxAmmoSlot = 1;
+					CBasePlayerItem *pNext = m_rgpPlayerItems[i]->m_pNext;
 
-					if (playerGrenades < pGrenade->iMaxAmmo1())
+					// Determine the max ammo capacity for the picked-up grenade
+					int iMaxPickupAmmo = pGrenade->iMaxAmmo1();
+
+					// If the player already has the same weapon in inventory,
+					// prioritize the max ammo capacity value over the one from the dropped weapon
+					// When the pickup occurs, ammo will be granted up to
+					// the max ammo capacity of the weapon currently held by the player
+					CBasePlayerItem *pInventoryItem = (CBasePlayerItem *)pPlayer->GetItemById((WeaponIdType)pGrenade->m_iId);
+					if (pInventoryItem && !Q_stricmp(pInventoryItem->pszAmmo1(), pGrenade->pszAmmo1()))
+						iMaxPickupAmmo = pInventoryItem->iMaxAmmo1();
+
+					// Pickup grenade item or refill ammo
+					if (GiveAmmoToPlayer(pPlayer, pGrenade,
+						playerGrenades, pGrenade->pszAmmo1(), iMaxPickupAmmo, &givenItem))
 					{
-						if (m_rgAmmo[boxAmmoSlot] > 1 && playerGrenades > 0)
-						{
-							if (!FStringNull(m_rgiszAmmo[boxAmmoSlot])
-								&& pPlayer->GiveAmmo(1, STRING(m_rgiszAmmo[boxAmmoSlot]), pGrenade->iMaxAmmo1()) != -1)
-							{
-								m_rgAmmo[boxAmmoSlot]--;
-
-								EMIT_SOUND(pPlayer->edict(), CHAN_ITEM, "items/9mmclip1.wav", VOL_NORM, ATTN_NORM);
-							}
-						}
-						else
-						{
-							auto pNext = m_rgpPlayerItems[i]->m_pNext;
-
-							if (pPlayer->AddPlayerItem(pItem))
-							{
-								pItem->AttachToPlayer(pPlayer);
-								givenItem = pItem;
-							}
-
-							// unlink this weapon from the box
-							m_rgpPlayerItems[i] = pItem = pNext;
-							continue;
-						}
+						// unlink this weapon from the box
+						m_rgpPlayerItems[i] = pItem = pNext;
+						continue;
 					}
 #else
-
 					int maxGrenades = 0;
 					const char *grenadeName = nullptr;
 
@@ -2125,12 +2219,17 @@ void CWeaponBox::Touch(CBaseEntity *pOther)
 		{
 			if (!FStringNull(m_rgiszAmmo[n]))
 			{
-				// there's some ammo of this type.
-#ifndef REGAMEDLL_ADD
-				pPlayer->GiveAmmo(m_rgAmmo[n], (char *)STRING(m_rgiszAmmo[n]), MaxAmmoCarry(m_rgiszAmmo[n]));
+				// there's some ammo of this type
+				if (m_rgAmmo[n] > 0)
+				{
+#ifdef REGAMEDLL_ADD
+					int iMaxAmmo = m_rgAmmo[n];
 #else
-				pPlayer->GiveAmmo(m_rgAmmo[n], STRING(m_rgiszAmmo[n]), m_rgAmmo[n]);
+					int iMaxAmmo = MaxAmmoCarry(m_rgiszAmmo[n]);
 #endif
+
+					pPlayer->GiveAmmo(m_rgAmmo[n], STRING(m_rgiszAmmo[n]), iMaxAmmo);
+				}
 
 				// now empty the ammo from the weaponbox since we just gave it to the player
 				m_rgiszAmmo[n] = iStringNull;
@@ -2269,6 +2368,24 @@ int CWeaponBox::GiveAmmo(int iCount, char *szName, int iMax, int *pIndex)
 
 	ALERT(at_console, "out of named ammo slots\n");
 	return i;
+}
+
+int CWeaponBox::GetAmmoIndex(const char *psz) const
+{
+	if (!psz)
+		return -1;
+
+	int i;
+	for (i = 1; i < MAX_AMMO_SLOTS; i++)
+	{
+		if (FStringNull(m_rgiszAmmo[i]))
+			continue;
+
+		if (!Q_stricmp(STRING(m_rgiszAmmo[i]), psz))
+			return i;
+	}
+
+	return -1;
 }
 
 // Is a weapon of this type already packed in this box?

@@ -180,6 +180,7 @@ cvar_t sv_block_vote_commands            = { "sv_block_vote_commands", "0", 0, 0
 cvar_t legacy_vehicle_block               = { "mp_legacy_vehicle_block", "1", 0, 0.0f, nullptr };
 
 cvar_t dying_time              = { "mp_dying_time", "3.0", 0, 3.0f, nullptr };
+cvar_t defuser_allocation      = { "mp_defuser_allocation", "0", 0, 0.0f, nullptr };
 
 void GameDLL_Version_f()
 {
@@ -440,6 +441,7 @@ void EXT_FUNC GameDLLInit()
 
 	CVAR_REGISTER(&freezetime_duck);
 	CVAR_REGISTER(&freezetime_jump);
+	CVAR_REGISTER(&defuser_allocation);
 
 	CVAR_REGISTER(&max_alive_name_changes);
 	CVAR_REGISTER(&legacy_restart_entities);
