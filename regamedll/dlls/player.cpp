@@ -1303,26 +1303,52 @@ CWeaponBox *EXT_FUNC __API_HOOK(CreateWeaponBox)(CBasePlayerItem *pItem, CBasePl
 		pWeaponBox->pev->nextthink = gpGlobals->time + lifeTime;
 		pWeaponBox->PackWeapon(pItem); // now pack all of the items in the lists
 
-		// pack the ammo
-		bool exhaustibleAmmo = (pItem->iFlags() & ITEM_FLAG_EXHAUSTIBLE) == ITEM_FLAG_EXHAUSTIBLE;
-		if ((exhaustibleAmmo || packAmmo) && pPlayerOwner)
+		// player is the ammo source
+		if (pPlayerOwner)
 		{
-#ifndef REGAMEDLL_ADD
-			pWeaponBox->PackAmmo(MAKE_STRING(pItem->pszAmmo1()), pPlayerOwner->m_rgAmmo[pItem->PrimaryAmmoIndex()]);
-#else
-			pWeaponBox->GiveAmmo(pPlayerOwner->m_rgAmmo[pItem->PrimaryAmmoIndex()], (char *)pItem->pszAmmo1(), pItem->iMaxAmmo1());
-#endif
-#ifndef REGAMEDLL_FIXES
 			// by removing ammo ONLY on exhaustible weapons (slot 4 and 5)
 			// you are allowing to duplicate ammo whenever:
 			// (1) you have 2 weapons sharing the same ammo type (e.g. mp5navy and glock)
 			// (2) you are dropping a weapon alive and pickup another (with same ammo type) without ammo
 			// and, logically, you throw your ammo with your gun with packing enabled
-			if (exhaustibleAmmo)
-#endif
+			bool exhaustibleAmmo = (pItem->iFlags() & ITEM_FLAG_EXHAUSTIBLE) == ITEM_FLAG_EXHAUSTIBLE;
+
+			// pack the primary ammo
+			if (exhaustibleAmmo || packAmmo)
 			{
-				pPlayerOwner->m_rgAmmo[pItem->PrimaryAmmoIndex()] = 0;
+#ifndef REGAMEDLL_ADD
+				pWeaponBox->PackAmmo(MAKE_STRING(pItem->pszAmmo1()), pPlayerOwner->m_rgAmmo[pItem->PrimaryAmmoIndex()]);
+#else
+				pWeaponBox->GiveAmmo(pPlayerOwner->m_rgAmmo[pItem->PrimaryAmmoIndex()], (char *)pItem->pszAmmo1(), pItem->iMaxAmmo1());
+#endif
+
+#ifndef REGAMEDLL_FIXES
+				if (exhaustibleAmmo)
+#endif
+				{
+					pPlayerOwner->m_rgAmmo[pItem->PrimaryAmmoIndex()] = 0;
+				}
 			}
+
+			// (3rd party support) now that reapi can register custom ammo
+#ifdef REGAMEDLL_ADD
+			// use this flag if you don't want the player harvesting this kind of ammo from dropped weapons
+			bool exhaustSecondaryAmmo = (pItem->iFlags() & ITEM_FLAG_EXHAUST_SECONDARYAMMO) == ITEM_FLAG_EXHAUST_SECONDARYAMMO;
+			int iSecondaryAmmoIndex = pItem->SecondaryAmmoIndex();
+
+			// pack secondary ammo now (must be valid too)
+			if ((exhaustibleAmmo || exhaustSecondaryAmmo || packAmmo) && iSecondaryAmmoIndex != -1)
+			{
+				pWeaponBox->GiveAmmo(pPlayerOwner->m_rgAmmo[iSecondaryAmmoIndex], (char *)pItem->pszAmmo2(), pItem->iMaxAmmo2());
+
+#ifndef REGAMEDLL_FIXES
+				if (exhaustibleAmmo)
+#endif
+				{
+					pPlayerOwner->m_rgAmmo[iSecondaryAmmoIndex] = 0;
+				}
+			}
+#endif
 		}
 
 		pWeaponBox->SetModel(modelName);
@@ -3082,11 +3108,16 @@ void CBasePlayer::WaterMove()
 		// not underwater
 
 		// play 'up for air' sound
-		if (pev->air_finished < gpGlobals->time)
-			EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_wade1.wav", VOL_NORM, ATTN_NORM);
+#ifdef REGAMEDLL_FIXES
+		if (pev->flags & FL_INWATER)
+#endif
+		{
+			if (pev->air_finished < gpGlobals->time)
+				EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_wade1.wav", VOL_NORM, ATTN_NORM);
 
-		else if (pev->air_finished < gpGlobals->time + 9)
-			EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_wade2.wav", VOL_NORM, ATTN_NORM);
+			else if (pev->air_finished < gpGlobals->time + 9)
+				EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_wade2.wav", VOL_NORM, ATTN_NORM);
+		}
 
 		pev->air_finished = gpGlobals->time + AIRTIME;
 		pev->dmg = 2;
@@ -3663,7 +3694,7 @@ void EXT_FUNC CBasePlayer::__API_HOOK(JoiningThink)()
 	}
 
 	if (m_pIntroCamera && gpGlobals->time >= m_fIntroCamTime
-#ifdef REGAMEDLL_FIXES 
+#ifdef REGAMEDLL_FIXES
 		&& m_fIntroCamTime > 0.0 // update only if cameras are available
 #endif
 		)
@@ -6316,6 +6347,44 @@ CBaseEntity *CBasePlayer::GiveNamedItemEx(const char *pszName)
 		return nullptr;
 	}
 #endif
+
+	return pEntity;
+}
+
+// Creates a copy of the specified entity (pEntitySource) and gives it to the player
+// The cloned entity inherits base properties (entvars) of the original entity
+// Returns Pointer to the cloned entity, or NULL if the entity cannot be created
+CBaseEntity *CBasePlayer::GiveCopyItem(CBaseEntity *pEntitySource)
+{
+	edict_t *pEdict = CREATE_NAMED_ENTITY(pEntitySource->pev->classname);
+	if (FNullEnt(pEdict))
+	{
+		ALERT(at_console, "NULL Ent in GiveCloneItem classname `%s`!\n", STRING(pEntitySource->pev->classname));
+		return nullptr;
+	}
+
+	// copy entity properties
+	Q_memcpy(&pEdict->v, pEntitySource->pev, sizeof(pEdict->v));
+
+	pEdict->v.pContainingEntity = pEdict;
+	pEdict->v.origin = pev->origin;
+	pEdict->v.spawnflags |= SF_NORESPAWN;
+	pEdict->v.owner = NULL; // will re-link owner after touching
+	pEdict->v.chain = ENT(pEntitySource->pev); // refer to source copy entity
+
+	DispatchSpawn(pEdict);
+	DispatchTouch(pEdict, ENT(pev));
+	pEdict->v.chain = NULL;
+
+	CBaseEntity *pEntity = GET_PRIVATE<CBaseEntity>(pEdict);
+
+	// not allow the item to fall to the ground.
+	if (FNullEnt(pEdict->v.owner) || pEdict->v.owner != edict())
+	{
+		pEdict->v.flags |= FL_KILLME;
+		UTIL_Remove(pEntity);
+		return nullptr;
+	}
 
 	return pEntity;
 }
@@ -10314,6 +10383,9 @@ void EXT_FUNC CBasePlayer::__API_HOOK(OnSpawnEquip)(bool addDefault, bool equipG
 		case ARMOR_VESTHELM: GiveNamedItemEx("item_assaultsuit"); break;
 		}
 	}
+
+	if (NeedsDefuseKit() && (int)defuser_allocation.value == DEFUSERALLOCATION_ALL)
+		GiveNamedItemEx("item_thighpack");
 #endif
 }
 
