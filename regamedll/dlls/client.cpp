@@ -2590,7 +2590,11 @@ void EXT_FUNC InternalCommand(edict_t *pEntity, const char *pcmd, const char *pa
 			pPlayer->ForceClientDllUpdate();
 		}
 	}
-	else if (FStrEq(pcmd, "vote"))
+	else if (FStrEq(pcmd, "vote")
+#ifdef REGAMEDLL_ADD
+		&& sv_block_vote_commands.value <= 0
+#endif
+		)
 	{
 		if (gpGlobals->time >= pPlayer->m_flLastCommandTime[CMD_VOTE])
 		{
@@ -2671,7 +2675,11 @@ void EXT_FUNC InternalCommand(edict_t *pEntity, const char *pcmd, const char *pa
 			CSGameRules()->DisplayMaps(pPlayer, 0);
 		}
 	}
-	else if (FStrEq(pcmd, "votemap"))
+	else if (FStrEq(pcmd, "votemap")
+#ifdef REGAMEDLL_ADD
+		&& sv_block_vote_commands.value <= 0
+#endif
+	)
 	{
 		if (gpGlobals->time >= pPlayer->m_flLastCommandTime[CMD_VOTEMAP])
 		{

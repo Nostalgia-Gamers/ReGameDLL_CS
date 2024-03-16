@@ -171,7 +171,19 @@ bool EXT_FUNC CBasePlayer::__API_HOOK(SetClientUserInfoName)(char *infobuffer, c
 	}
 #endif
 
-	if (pev->deadflag != DEAD_NO)
+#ifdef REGAMEDLL_ADD
+	if (max_alive_name_changes.value <= 0)
+	{
+		ClientPrint(pev, HUD_PRINTCENTER, "#Command_Not_Available");
+		return false;
+	}
+#endif
+
+	if (pev->deadflag != DEAD_NO
+#if defined REGAMEDLL_API && REGAMEDLL_ADD
+		|| CSPlayer()->m_iAliveNameChanges >= max_alive_name_changes.value
+#endif
+		)
 	{
 		m_bHasChangedName = true;
 		Q_snprintf(m_szNewName, sizeof(m_szNewName), "%s", szNewName);
@@ -188,6 +200,10 @@ bool EXT_FUNC CBasePlayer::__API_HOOK(SetClientUserInfoName)(char *infobuffer, c
 		WRITE_STRING(STRING(pev->netname));
 		WRITE_STRING(szNewName);
 	MESSAGE_END();
+
+#ifdef REGAMEDLL_API
+	CSPlayer()->m_iAliveNameChanges++;
+#endif
 
 	UTIL_LogPrintf("\"%s<%i><%s><%s>\" changed name to \"%s\"\n", STRING(pev->netname), GETPLAYERUSERID(edict()), GETPLAYERAUTHID(edict()), GetTeam(m_iTeam), szNewName);
 	return true;
