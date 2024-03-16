@@ -2181,4 +2181,5 @@ float GetBaseAccuracy(WeaponIdType id);
 void ClearMultiDamage_OrigFunc();
 void ApplyMultiDamage_OrigFunc(entvars_t *pevInflictor, entvars_t *pevAttacker);
 void AddMultiDamage_OrigFunc(entvars_t *pevInflictor, CBaseEntity *pEntity, float flDamage, int bitsDamageType);
+BOOL RemoveAmmoNameFromAmmoRegistry(const char* szAmmoname);
 #endif
