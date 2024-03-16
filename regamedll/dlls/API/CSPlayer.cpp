@@ -544,7 +544,6 @@ void CCSPlayer::ResetVars()
 	m_bGameForcingRespawn = false;
 	m_bAutoBunnyHopping = false;
 	m_bMegaBunnyJumping = false;
-	m_iAliveNameChanges = 0;
 	m_bSpawnProtectionEffects = false;
 }
 
@@ -565,7 +564,6 @@ void CCSPlayer::OnSpawn()
 {
 	m_bGameForcingRespawn = false;
 	m_flRespawnPending = 0.0f;
-	m_iAliveNameChanges = 0;
 	m_DamageList.Clear();
 }
 

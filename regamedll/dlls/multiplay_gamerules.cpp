@@ -607,16 +607,11 @@ LINK_HOOK_CLASS_VOID_CUSTOM_CHAIN2(CHalfLifeMultiplay, CSGameRules, CleanUpMap)
 void EXT_FUNC CHalfLifeMultiplay::__API_HOOK(CleanUpMap)()
 {
 #ifdef REGAMEDLL_FIXES
-#ifdef REGAMEDLL_ADD
-	if (!(bool)legacy_restart_entities.value)
-#endif
-	{
-		UTIL_RestartOther("multi_manager");
+	UTIL_RestartOther("multi_manager");
 
-		// Release or reset everything entities in depending of flags ObjectCaps
-		// (FCAP_MUST_RESET / FCAP_MUST_RELEASE)
-		UTIL_ResetEntities();
-	}
+	// Release or reset everything entities in depending of flags ObjectCaps
+	// (FCAP_MUST_RESET / FCAP_MUST_RELEASE)
+	UTIL_ResetEntities();
 #endif
 
 	// Recreate all the map entities from the map data (preserving their indices),
@@ -627,16 +622,11 @@ void EXT_FUNC CHalfLifeMultiplay::__API_HOOK(CleanUpMap)()
 	UTIL_RestartOther("func_door");
 
 #ifdef REGAMEDLL_FIXES
-#ifdef REGAMEDLL_ADD
-	if (!(bool)legacy_restart_entities.value)
-#endif
-	{
-		UTIL_RestartOther("func_button");
-		UTIL_RestartOther("func_rot_button");
-		UTIL_RestartOther("env_render");
-		UTIL_RestartOther("env_spark");
-		UTIL_RestartOther("trigger_push");
-	}
+	UTIL_RestartOther("func_button");
+	UTIL_RestartOther("func_rot_button");
+	UTIL_RestartOther("env_render");
+	UTIL_RestartOther("env_spark");
+	UTIL_RestartOther("trigger_push");
 #endif
 
 	UTIL_RestartOther("func_water");
@@ -649,20 +639,15 @@ void EXT_FUNC CHalfLifeMultiplay::__API_HOOK(CleanUpMap)()
 	UTIL_RestartOther("env_sprite");
 
 #ifdef REGAMEDLL_FIXES
-#ifdef REGAMEDLL_ADD
-	if (!(bool)legacy_restart_entities.value)
-#endif
-	{
-		UTIL_RestartOther("trigger_once");
-		UTIL_RestartOther("func_wall_toggle");
-		UTIL_RestartOther("func_healthcharger");
-		UTIL_RestartOther("func_recharge");
-		UTIL_RestartOther("trigger_hurt");
-		UTIL_RestartOther("multisource");
-		UTIL_RestartOther("env_beam");
-		UTIL_RestartOther("env_laser");
-		UTIL_RestartOther("trigger_auto");
-	}
+	UTIL_RestartOther("trigger_once");
+	UTIL_RestartOther("func_wall_toggle");
+	UTIL_RestartOther("func_healthcharger");
+	UTIL_RestartOther("func_recharge");
+	UTIL_RestartOther("trigger_hurt");
+	UTIL_RestartOther("multisource");
+	UTIL_RestartOther("env_beam");
+	UTIL_RestartOther("env_laser");
+	UTIL_RestartOther("trigger_auto");
 #endif
 
 	// Remove grenades and C4

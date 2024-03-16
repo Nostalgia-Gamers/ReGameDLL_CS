@@ -173,7 +173,6 @@ ReGameFuncs_t g_ReGameApiFuncs = {
 	UTIL_Remove_api,
 
 	AddAmmoNameToAmmoRegistry_api,
-	RemoveAmmoNameFromAmmoRegistry,
 	TextureTypePlaySound_api,
 	CreateWeaponBox_api,
 	SpawnGrenade_api,

@@ -194,10 +194,8 @@ void CSG550::SG550Fire(float flSpread, float flCycleTime, BOOL fUseAutoAim)
 
 void CSG550::Reload()
 {
-#ifndef REGAMEDLL_FIXES
 	if (m_pPlayer->ammo_556nato <= 0)
 		return;
-#endif
 
 	if (DefaultReload(iMaxClip(), SG550_RELOAD, SG550_RELOAD_TIME))
 	{

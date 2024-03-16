@@ -202,10 +202,6 @@ extern cvar_t freezetime_duck;
 extern cvar_t freezetime_jump;
 extern cvar_t defuser_allocation;
 
-extern cvar_t max_alive_name_changes;
-extern cvar_t legacy_restart_entities;
-extern cvar_t sv_block_vote_commands;
-
 #endif
 
 extern cvar_t scoreboard_showmoney;

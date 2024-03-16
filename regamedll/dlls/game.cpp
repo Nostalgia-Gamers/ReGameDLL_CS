@@ -171,11 +171,8 @@ cvar_t deathmsg_flags                    = { "mp_deathmsg_flags", "abc", 0, 0.0f
 cvar_t assist_damage_threshold           = { "mp_assist_damage_threshold", "40", 0, 40.0f, nullptr };
 cvar_t freezetime_duck                   = { "mp_freezetime_duck", "1", 0, 1.0f, nullptr };
 cvar_t freezetime_jump                   = { "mp_freezetime_jump", "1", 0, 1.0f, nullptr };
-cvar_t hostages_rescued_ratio            = { "mp_hostages_rescued_ratio", "1.0", 0, 1.0f, nullptr };
 
-cvar_t max_alive_name_changes            = { "mp_max_alive_name_changes", "-1", 0, -1.0f, nullptr };
-cvar_t legacy_restart_entities           = { "sv_legacy_restart_entities", "0", 0, 0.0f, nullptr };
-cvar_t sv_block_vote_commands            = { "sv_block_vote_commands", "0", 0, 0.0f, nullptr };
+cvar_t hostages_rescued_ratio = { "mp_hostages_rescued_ratio", "1.0", 0, 1.0f, nullptr };
 
 cvar_t legacy_vehicle_block               = { "mp_legacy_vehicle_block", "1", 0, 0.0f, nullptr };
 
@@ -432,7 +429,9 @@ void EXT_FUNC GameDLLInit()
 	CVAR_REGISTER(&sv_enablebunnyhopping);
 	CVAR_REGISTER(&plant_c4_anywhere);
 	CVAR_REGISTER(&give_c4_frags);
+
 	CVAR_REGISTER(&hostages_rescued_ratio);
+
 	CVAR_REGISTER(&legacy_vehicle_block);
 
 	CVAR_REGISTER(&dying_time);
@@ -442,10 +441,6 @@ void EXT_FUNC GameDLLInit()
 	CVAR_REGISTER(&freezetime_duck);
 	CVAR_REGISTER(&freezetime_jump);
 	CVAR_REGISTER(&defuser_allocation);
-
-	CVAR_REGISTER(&max_alive_name_changes);
-	CVAR_REGISTER(&legacy_restart_entities);
-	CVAR_REGISTER(&sv_block_vote_commands);
 
 	// print version
 	CONSOLE_ECHO("ReGameDLL version: " APP_VERSION "\n");

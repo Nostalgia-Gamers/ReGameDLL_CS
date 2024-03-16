@@ -54,13 +54,6 @@ enum BuyItemMenuSlot
 	MENU_SLOT_ITEM_SHIELD,
 };
 
-// custom enum
-enum
-{
-	BLOCK_VOTE = BIT(0),
-	BLOCK_VOTEMAP = BIT(1),
-};
-
 #define CS_NUM_SKIN				4
 #define CZ_NUM_SKIN				5
 

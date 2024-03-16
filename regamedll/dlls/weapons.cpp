@@ -212,28 +212,6 @@ struct {
 	{ AMMO_C4,           "C4" },
 };
 #endif
-#ifdef REGAMEDLL_API
-BOOL EXT_FUNC RemoveAmmoNameFromAmmoRegistry(const char *szAmmoname)
-{
-	if (!szAmmoname || !szAmmoname[0])
-	{
-		return FALSE;
-	}
-
-	for (int i = 1; i < MAX_AMMO_SLOTS; i++)
-	{
-		AmmoInfo& ammoinfo = CBasePlayerItem::m_AmmoInfoArray[i];
-
-		if (ammoinfo.iId && !Q_stricmp(ammoinfo.pszName, szAmmoname))
-		{
-			Q_memset(&CBasePlayerItem::m_AmmoInfoArray[i], 0, sizeof(CBasePlayerItem::m_AmmoInfoArray[i]));
-			return TRUE;
-		}
-	}
-
-	return FALSE;
-}
-#endif
 
 // Precaches the ammo and queues the ammo info for sending to clients
 int AddAmmoNameToAmmoRegistry(const char *szAmmoname)
@@ -244,32 +222,6 @@ int AddAmmoNameToAmmoRegistry(const char *szAmmoname)
 		return -1;
 	}
 
-#ifdef REGAMEDLL_ADD
-	int newIndex = -1;
-	for (int i = 1; i < MAX_AMMO_SLOTS; i++)
-	{
-		AmmoInfo& ammoinfo = CBasePlayerItem::m_AmmoInfoArray[i];
-
-		if (ammoinfo.iId && !Q_stricmp(ammoinfo.pszName, szAmmoname))
-		{
-			return i;
-		}
-
-		// New slot for the ammo it's the first one clear.
-		if (!ammoinfo.iId && newIndex == -1)
-		{
-			newIndex = i;
-		}
-	}
-
-	if (newIndex != -1)
-	{
-		CBasePlayerItem::m_AmmoInfoArray[newIndex].pszName = szAmmoname;
-		CBasePlayerItem::m_AmmoInfoArray[newIndex].iId = newIndex;
-	}
-
-	return newIndex;
-#else
 	// make sure it's not already in the registry
 	for (int i = 1; i < MAX_AMMO_SLOTS; i++)
 	{
@@ -308,7 +260,6 @@ int AddAmmoNameToAmmoRegistry(const char *szAmmoname)
 	CBasePlayerItem::m_AmmoInfoArray[giAmmoIndex].iId = giAmmoIndex;
 
 	return giAmmoIndex;
-#endif
 }
 
 // Precaches the weapon and queues the weapon info for sending to clients
@@ -1277,9 +1228,10 @@ void CBasePlayerItem::AttachToPlayer(CBasePlayer *pPlayer)
 void CBasePlayerWeapon::Spawn()
 {
 #ifdef REGAMEDLL_API
-	ItemInfo &info = m_ItemInfoArray[m_iId];
+	ItemInfo info;
+	Q_memset(&info, 0, sizeof(info));
 
-	if (info.iId) {
+	if (GetItemInfo(&info)) {
 		CSPlayerItem()->SetItemInfo(&info);
 	}
 #endif

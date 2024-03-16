@@ -164,10 +164,8 @@ void CMP5N::MP5NFire(float flSpread, float flCycleTime, BOOL fUseAutoAim)
 
 void CMP5N::Reload()
 {
-#ifndef REGAMEDLL_FIXES
 	if (m_pPlayer->ammo_9mm <= 0)
 		return;
-#endif
 
 	if (DefaultReload(iMaxClip(), MP5N_RELOAD, MP5N_RELOAD_TIME))
 	{
